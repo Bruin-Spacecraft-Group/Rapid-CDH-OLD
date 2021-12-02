@@ -1,4 +1,7 @@
+#include <iostream>
 #include "sensor.h"
+#include "../globals.h"
+using namespace spartan;
 
 // Constructor
 Sensor::Sensor(int busID, int instance)

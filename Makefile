@@ -9,8 +9,8 @@ OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
 INC_DIRS := comlib
 INC_FLAGS := $(addprefix -I,$(INC_DIRS))
 
-LD := ld
-LDFLAGS :=
+LD := clang++
+LDFLAGS := -lmraa -lpthread -lm
 
 CC := clang++
 CPPFLAGS ?= $(INC_FLAGS) -std=c++20 -MMD -MP -O0 -g3 -Wall
