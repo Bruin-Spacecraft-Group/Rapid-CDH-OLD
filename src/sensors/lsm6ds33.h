@@ -6,15 +6,12 @@
 #include <cstdlib>
 #include <chrono>
 
-// TODO: When Apple releases an ARM Macbook, fix this again
-#if !defined(__x86_64__) && !defined(_WIN32)
 #include <mraa/i2c.hpp>
-#else
-#include <mock/i2c.h>
-#endif
 
-#include <sensors/sensor.h>
-#include <globals.h>
+#include "sensor.h"
+
+#include "../globals.h"
+using namespace spartan;
 
 // Data sheet and other info about sensor can be referenced here: https://www.st.com/resource/en/datasheet/lsm6ds33.pdf
 

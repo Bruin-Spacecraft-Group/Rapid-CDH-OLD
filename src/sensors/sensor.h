@@ -1,6 +1,8 @@
 #ifndef RAPIDCDH_SENSOR_H
 #define RAPIDCDH_SENSOR_H
 
+typedef int MasterDataPacket ;
+
 class Sensor {
 public:
     // Constructor that takes in pin number that sensor is connected to; this pin number would be used for all
