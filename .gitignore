@@ -31,8 +31,11 @@
 *.out
 *.app
 
-# Other
-.idea/
+# Build files
 cmake-build-debug/
-build/
 obj/
+build/
+
+# Other
+*.tar.gz
+.idea/
