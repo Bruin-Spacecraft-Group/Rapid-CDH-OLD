@@ -34,4 +34,5 @@
 # Other
 .idea/
 cmake-build-debug/
+build/
 obj/
