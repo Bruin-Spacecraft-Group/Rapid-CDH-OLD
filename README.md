@@ -1,18 +1,55 @@
 # RapidCDH
 Rapid C&DH repository
 
+## Getting started
+Clone the repository:
+
+```
+git clone https://github.com/Bruin-Spacecraft-Group/RapidCDH.git
+```
+
+If you're starting from scratch, check out the [headless setup guide](docs/rpi-headless-setup.md) and the
+[cross-compiling guide](docs/rpi-cross-compile.md) for the Raspberry Pi.
+
+Otherwise, build the project:
+
+```
+./build.sh
+```
+
+Move the executable to the Pi:
+
+```
+scp build/RapidCDH pi@<pi-IP>:/home/pi
+```
+
+Run the program on the Pi:
+
+```
+pi@raspberrypi ~ $ ./RapidCDH
+```
+
+### Warning!
+The generated executable targets ARM, and will not run on your computer! If you try it, you'll
+probably get an error like:
+
+```
+The file './build/RapidCDH' is marked as an executable but could not be run by the operating system.
+```
+
+## Making a new branch
+To make a new branch, run:
+
+```
+git checkout -b <branch-name>
+```
+
+After making your changes, push your new branch to the remote repository:
+
+```
+git push origin <branch-name>
+```
+
 ## WiringPi
 - [Repository](https://github.com/WiringPi/WiringPi)
 - [Gordon's Website](http://wiringpi.com/)
-
-## Datasheets
-- [Raspberry Pi Zero Pinout](https://cdn.sparkfun.com/assets/learn_tutorials/6/7/6/PiZero_1.pdf)
-- C&DH
-  - [R2023T-E2-F](https://www.mouser.com/datasheet/2/792/r2023_ea-1901332.pdf) (RTC)
-- ADCS
-  - [UM7](https://www.pololu.com/file/0J1556/UM7%20Datasheet_v1-8_30.07.2018.pdf) (IMU)
-  - [uCAM-III](https://4dsystems.com.au/mwdownloads/download/link/id/420/) (Camera)
-- EPS
-  - [Adafruit INA260](https://cdn-learn.adafruit.com/downloads/pdf/adafruit-ina260-current-voltage-power-sensor-breakout.pdf) (Current/Voltage sensor)
-- Thermal
-  - [PPG102A6](https://www.mouser.com/datasheet/2/240/Littelfuse_Leaded_RTDs_Thin_Film_Platinum_RTD_Sens-1372451.pdf)
