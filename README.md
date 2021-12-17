@@ -2,16 +2,20 @@
 Rapid C&DH repository
 
 ## Getting started
+
 Clone the repository:
 
 ```
 git clone https://github.com/Bruin-Spacecraft-Group/RapidCDH.git
 ```
 
-If you're starting from scratch, check out the [headless setup guide](docs/rpi-headless-setup.md) and the
-[cross-compiling guide](docs/rpi-cross-compile.md) for the Raspberry Pi.
+Run the setup script (you only need to do this once):
 
-Otherwise, build the project:
+```
+sudo ./setup.sh
+```
+
+Build the project:
 
 ```
 ./build.sh
@@ -36,6 +40,11 @@ probably get an error like:
 ```
 The file './build/RapidCDH' is marked as an executable but could not be run by the operating system.
 ```
+
+## More guides
+
+- [Headless setup guide](docs/rpi-headless-setup.md)
+- [Cross-compiling guide](docs/rpi-cross-compile.md)
 
 ## Making a new branch
 To make a new branch, run:
