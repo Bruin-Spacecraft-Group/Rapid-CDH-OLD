@@ -15,7 +15,7 @@ echo -e \
 "find_library(WIRINGPI_LIBRARIES NAMES wiringPi)\n"\
 "find_path(WIRINGPI_INCLUDE_DIRS NAMES wiringPi.h)\n\n"\
 "include(FindPackageHandleStandardArgs)\n"\
-"find_package_handle_standard_args(wiringPi DEFAULT_MSG WIRINGPI_LIBRARIES WIRINGPI_INCLUDE_DIRS)"\
+"find_package_handle_standard_args(WiringPi DEFAULT_MSG WIRINGPI_LIBRARIES WIRINGPI_INCLUDE_DIRS)"\
 > /usr/share/cmake-$CMAKE_VERSION/Modules/FindWiringPi.cmake
 echo "Created FindWiringPi.cmake in /usr/share/cmake-$CMAKE_VERSION/Modules"
 
