@@ -16,4 +16,4 @@ add_library(sensorsLib "")
 
 add_subdirectory(sensors)
 
-target_link_libraries(RapidCDH PUBLIC ${WIRINGPI_LIBRARIES})
+target_link_libraries(RapidCDH PUBLIC ${WIRINGPI_LIBRARIES} sensorsLib)

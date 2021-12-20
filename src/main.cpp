@@ -3,16 +3,24 @@
 #include <pthread.h>
 #include <thread>
 
-void foo() {}
+#include <wiringPi.h>
+#include <wiringSerial.h>
+
+#include "globals.h"
+#include "sensors/ucam_iii.h"
+
+using std::cout;
+using std::endl;
 
 int main() {
-    std::cout << "starting up" << std::endl;
-
-    while (true) {
-
-
-
-    // sleep for 50 ms
-    std::this_thread::sleep_for(std::chrono::milliseconds(50));
+    if (wiringPiSetup() == -1) {
+        cout << "Unable to start WiringPi" << endl;
+        return 1;
+    } else {
+        cout << "WiringPi set up" << endl;
     }
+
+    UCamIII ucam(SERIAL_DEV_0, SERIAL_BAUD_RATE, UCAM_RESET_PIN);
+
+    return 0;
 }
