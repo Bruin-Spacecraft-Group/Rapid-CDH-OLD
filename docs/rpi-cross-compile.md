@@ -5,7 +5,7 @@ Most of the work will be done on your host computer. For clarity, whenever somet
 it will be prepended with:
 
 ```
-pi@raspberrypi ~ $ command
+pi@raspberrypi:~ $ command
 ```
 
 ## Project structure
@@ -30,13 +30,13 @@ most recent version, clone it from the [WiringPi Mirror](https://github.com/Wiri
 WiringPi library).
 
 ```
-pi@raspberrypi ~ $ git clone https://github.com/WiringPi/WiringPi.git
+pi@raspberrypi:~ $ git clone https://github.com/WiringPi/WiringPi.git
 ```
 
 Then install it with their build script:
 
 ```
-pi@raspberrypi ~ $ ./build
+pi@raspberrypi:~ $ ./build
 ```
 
 ## Get the sample code
@@ -260,7 +260,7 @@ Then, set up the blink circuit according to [Gordon's example](http://wiringpi.c
 on the Pi:
 
 ```
-pi@raspberrypi ~ $ ./project
+pi@raspberrypi:~ $ ./project
 ```
 
 You should see the LED flashing once per second!
