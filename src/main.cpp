@@ -22,5 +22,7 @@ int main() {
 
     UCamIII ucam(SERIAL_DEV_0, SERIAL_BAUD_RATE, UCAM_RESET_PIN);
 
+    ucam.initialize();
+
     return 0;
 }

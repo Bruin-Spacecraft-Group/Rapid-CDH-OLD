@@ -5,105 +5,113 @@
 
 class UCamIII {
 public:
-    UCamIII(const char* serial_dev, const int baud_rate, const int res_pin);
+    UCamIII(const char* serial_dev, const int baud_rate, const int rst_pin);
     ~UCamIII();
 
-    void reset() const;
+    int initialize();
+    void hardware_reset() const;
+
+    void receive_cmd(int* data) const;
+
+    // Commands
+    int sync() const;
 
     // Enums
-    enum class CmdID {
-        INITIAL          = 0x01,
-        GET_PICTURE      = 0x04,
-        SNAPSHOT         = 0x05,
-        SET_PACKAGE_SIZE = 0x06,
-        SET_BAUD_RATE    = 0x07,
-        RESET            = 0x08,
-        DATA             = 0x0A,
-        SYNC             = 0x0D,
-        ACK              = 0x0E,
-        NAK              = 0x0F,
-        LIGHT            = 0x13,
-        SET_TONE         = 0x14, // Contrast, brightness, exposure
-        SLEEP            = 0x15
+    enum CmdID {
+        CMD_INITIAL          = 0x01,
+        CMD_GET_PICTURE      = 0x04,
+        CMD_SNAPSHOT         = 0x05,
+        CMD_SET_PACKAGE_SIZE = 0x06,
+        CMD_SET_BAUD_RATE    = 0x07,
+        CMD_RESET            = 0x08,
+        CMD_DATA             = 0x0A,
+        CMD_SYNC             = 0x0D,
+        CMD_ACK              = 0x0E,
+        CMD_NAK              = 0x0F,
+        CMD_LIGHT            = 0x13,
+        CMD_SET_TONE         = 0x14, // Contrast, brightness, exposure
+        CMD_SLEEP            = 0x15
     };
 
-    enum class ImgFormat {
-        RAW_GRAY_8    = 0x03, // 8-bit Gray Scale (RAW, 8-bit for Y only)
-        RAW_CrYCbY_16 = 0x08, // 16-bit Colour (RAW, CrYCbY)
-        RAW_RGB_16    = 0x06, // 16-bit Colour (RAW, 565(RGB))
-        JPEG          = 0x07
+    enum ImgFormat {
+        FMT_RAW_GRAY_8    = 0x03, // 8-bit Gray Scale (RAW, 8-bit for Y only)
+        FMT_RAW_CrYCbY_16 = 0x08, // 16-bit Colour (RAW, CrYCbY)
+        FMT_RAW_RGB_16    = 0x06, // 16-bit Colour (RAW, 565(RGB))
+        FMT_JPEG          = 0x07
     };
 
-    enum class RawRes {
-        RES_60x80   = 0x01,
-        RES_160x120 = 0x03,
-        RES_128x128 = 0x09,
-        RES_128x96  = 0x0B
+    enum RawRes {
+        RAW_60x80   = 0x01,
+        RAW_160x120 = 0x03,
+        RAW_128x128 = 0x09,
+        RAW_128x96  = 0x0B
     };
 
-    enum class JPEGRes {
-        RES_160x128 = 0x03,
-        RES_320x240 = 0x05,
-        RES_640x480 = 0x07
+    enum JPEGRes {
+        JPEG_160x128 = 0x03,
+        JPEG_320x240 = 0x05,
+        JPEG_640x480 = 0x07
     };
 
-    enum class PictureType {
-        SNAPSHOT = 0x01,
-        RAW      = 0x02,
-        JPEG     = 0x05
+    enum PictureType {
+        PIC_SNAPSHOT = 0x01,
+        PIC_RAW      = 0x02,
+        PIC_JPEG     = 0x05
     };
 
-    enum class SnapshotType {
-        JPEG = 0x00, // Compressed
-        RAW  = 0x01  // Uncompressed
+    enum SnapshotType {
+        SNAP_JPEG, // Compressed
+        SNAP_RAW   // Uncompressed
     };
 
-    enum class ResetType {
-        ALL,            // Resets the whole system. The uCAM-III will reboot and reset all registers and state machines.
-        STATE_MACHINES  // Resets the state machines only
+    enum ResetType {
+        RST_ALL,            // Resets the whole system. The uCAM-III will reboot and reset all registers and state machines.
+        RST_STATE_MACHINES  // Resets the state machines only
     };
 
-    enum class Error {
-        NO_ERR,
-        PICTURE_TYPE_ERR,
-        PICTURE_UP_SCALE,
-        PICTURE_SCALE_ERR,
-        UNEXPECTED_REPLY,
-        SEND_PICTURE_TIMEOUT,
-        UNEXPECTED_COMMAND,
-        SRAM_JPEG_TYPE_ERR,
-        SRAM_JPEG_SIZE_ERR,
-        PICTURE_FORMAT_ERR,
-        PICTURE_SIZE_ERR,
-        PARAMETER_ERR,
-        SEND_REGISTER_TIMEOUT,
-        COMMAND_ID_ERR,
-        PICTURE_NOT_READY,
-        TRANSFER_PACKAGE_NUM_ERR,
-        SET_TRANSFER_PACKAGE_SIZE_WRONG,
-        COMMAND_HEADER_ERR,
-        COMMAND_LENGTH_ERR,
-        SEND_PICTURE_ERR,
-        SEND_COMMAND_ERR
+    enum Error {
+        ERR_NONE,
+        ERR_PICTURE_TYPE,
+        ERR_PICTURE_UP_SCALE,
+        ERR_PICTURE_SCALE,
+        ERR_UNEXPECTED_REPLY,
+        ERR_SEND_PICTURE_TIMEOUT,
+        ERR_UNEXPECTED_COMMAND,
+        ERR_SRAM_JPEG_TYPE,
+        ERR_SRAM_JPEG_SIZE,
+        ERR_PICTURE_FORMAT,
+        ERR_PICTURE_SIZE,
+        ERR_PARAMETER,
+        ERR_SEND_REGISTER_TIMEOUT,
+        ERR_COMMAND_ID,
+        ERR_PICTURE_NOT_READY,
+        ERR_TRANSFER_PACKAGE_NUM,
+        ERR_SET_TRANSFER_PACKAGE_SIZE_WRONG,
+        ERR_COMMAND_HEADER,
+        ERR_COMMAND_LENGTH,
+        ERR_SEND_PICTURE,
+        ERR_SEND_COMMAND
     };
 
-    enum class LightFreqType {
-        HZ_50,
-        HZ_60
+    enum LightFreqType { // Hz
+        FREQ_50,
+        FREQ_60
     };
 
     // For brightness, contrast, exposure
-    enum class Tone {
-        MIN,    // Exposure: -2
-        LESS,    // Exposure: -1
-        NORMAL, // Default. Exposure: 0
-        MORE,   // Exposure: +1
-        MAX     // Exposure: +2
+    enum Tone {
+        TONE_MIN,    // Exposure: -2
+        TONE_LOW,    // Exposure: -1
+        TONE_NORMAL, // Default. Exposure: 0
+        TONE_HIGH,   // Exposure: +1
+        TONE_MAX     // Exposure: +2
     };
 
 private:
+    const char* serial_dev;
+    int baud_rate;
     int serial_port;
-    int res_pin;
+    int rst_pin;
 
     void send_cmd(CmdID cmd, uint8_t param1, uint8_t param2, uint8_t param3, uint8_t param4) const;
 };
