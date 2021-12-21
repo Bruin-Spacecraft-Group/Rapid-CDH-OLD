@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(RapidCDH)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 add_compile_options(-Wall)
 
@@ -16,4 +16,8 @@ add_library(sensorsLib "")
 
 add_subdirectory(sensors)
 
-target_link_libraries(RapidCDH PUBLIC ${WIRINGPI_LIBRARIES} sensorsLib)
+target_link_libraries(RapidCDH
+    PUBLIC
+        ${WIRINGPI_LIBRARIES}
+        sensorsLib
+)

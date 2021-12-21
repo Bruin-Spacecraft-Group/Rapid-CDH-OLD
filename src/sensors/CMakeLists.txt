@@ -4,6 +4,6 @@ target_sources(sensorsLib
 #        sensor.h
         ina260.cpp
         ina260.h
-        ucam_iii.cpp
-        ucam_iii.h
+        UCamIII.cpp
+        UCamIII.h
 )

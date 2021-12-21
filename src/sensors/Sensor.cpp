@@ -1,5 +1,5 @@
 #include <iostream>
-#include "sensor.h"
+#include "Sensor.h"
 #include "../globals.h"
 using namespace spartan;
 

@@ -7,7 +7,7 @@
 #include <wiringSerial.h>
 
 #include "globals.h"
-#include "sensors/ucam_iii.h"
+#include "sensors/UCamIII.h"
 
 using std::cout;
 using std::endl;
@@ -22,7 +22,11 @@ int main() {
 
     UCamIII ucam(SERIAL_DEV_0, SERIAL_BAUD_RATE, UCAM_RESET_PIN);
 
-    ucam.initialize();
+    try {
+        ucam.initialize();
+    } catch (UCamIIIException &e) {
+        cout << "UCam initialization failed" << endl;
+    }
 
     return 0;
 }
