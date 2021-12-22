@@ -36,7 +36,7 @@ pi@raspberrypi:~ $ git clone https://github.com/WiringPi/WiringPi.git
 Then install it with their build script:
 
 ```
-pi@raspberrypi:~ $ ./build
+pi@raspberrypi:~/WiringPi $ ./build
 ```
 
 ## Get the sample code
