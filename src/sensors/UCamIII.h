@@ -2,22 +2,31 @@
 #define RAPIDCDH_UCAM_III_H
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <cstdint>
 
 class UCamIII {
 public:
-    UCamIII(const char* serial_dev, const int baud_rate, const int rst_pin);
+    UCamIII(const char* serial_dev, int baud_rate, int rst_pin,
+            uint8_t img_format, uint8_t raw_res, uint8_t jpeg_res, std::ofstream& fout);
     ~UCamIII();
 
-    void initialize();
+    void init();
     void hardware_reset() const;
 
-    void send_cmd(int cmd, uint8_t param1, uint8_t param2, uint8_t param3, uint8_t param4) const;
+    void send_cmd_unchecked(int cmd, uint8_t param1 = 0, uint8_t param2 = 0, uint8_t param3 = 0, uint8_t param4 = 0) const;
+    void send_cmd(int cmd, uint8_t param1 = 0, uint8_t param2 = 0, uint8_t param3 = 0, uint8_t param4 = 0) const;
     void receive_cmd(int* data) const;
 
-    // Commands
     void sync() const;
+    void initial(uint8_t img_format, uint8_t raw_res, uint8_t jpeg_res);
+    void set_package_size(int size);
+    void snapshot(uint8_t snapshot_type, int skipped_frames = 0) const;
+    [[nodiscard]] int get_picture(uint8_t picture_type) const;
+
+    void write_jpeg_data(int len) const;
+    void write_raw_data(int len) const;
 
     // Enums
     enum CmdID {
@@ -38,7 +47,7 @@ public:
 
     enum ImgFormat {
         FMT_RAW_GRAY_8    = 0x03, // 8-bit Gray Scale (RAW, 8-bit for Y only)
-        FMT_RAW_CrYCbY_16 = 0x08, // 16-bit Colour (RAW, CrYCbY)
+        FMT_RAW_CRYCBY_16 = 0x08, // 16-bit Colour (RAW, CrYCbY)
         FMT_RAW_RGB_16    = 0x06, // 16-bit Colour (RAW, 565(RGB))
         FMT_JPEG          = 0x07
     };
@@ -111,89 +120,25 @@ public:
     };
 
 private:
-    const char* serial_dev;
-    int baud_rate;
-    int serial_port;
-    int rst_pin;
-};
+    const char* m_serial_dev;
+    int m_baud_rate;
+    int m_serial_port;
+    int m_rst_pin;
 
-class UCamIIIException {
-public:
-    UCamIIIException(const std::string &msg) {
-        std::cout << "UCam Error: " << msg << std::endl;
-    }
+    int m_pkg_size;
+    uint8_t m_img_format;
+    uint8_t m_raw_res;
+    uint8_t m_jpeg_res;
 
-    UCamIIIException(int err) {
-        std::cout << "UCam Error: ";
+    std::ofstream& m_fout;
 
-        switch (err) {
-            case UCamIII::ERR_PICTURE_TYPE:
-                std::cout << "Picture type error";
-                break;
-            case UCamIII::ERR_PICTURE_UP_SCALE:
-                std::cout << "Picture up scale";
-                break;
-            case UCamIII::ERR_PICTURE_SCALE:
-                std::cout << "Picture scale error";
-                break;
-            case UCamIII::ERR_UNEXPECTED_REPLY:
-                std::cout << "Unexpected reply";
-                break;
-            case UCamIII::ERR_SEND_PICTURE_TIMEOUT:
-                std::cout << "Send picture timeout";
-                break;
-            case UCamIII::ERR_UNEXPECTED_COMMAND:
-                std::cout << "Unexpected command";
-                break;
-            case UCamIII::ERR_SRAM_JPEG_TYPE:
-                std::cout << "SRAM JPEG type error";
-                break;
-            case UCamIII::ERR_SRAM_JPEG_SIZE:
-                std::cout << "SRAM JPEG size error";
-                break;
-            case UCamIII::ERR_PICTURE_FORMAT:
-                std::cout << "Picture format error";
-                break;
-            case UCamIII::ERR_PICTURE_SIZE:
-                std::cout << "Picture size error";
-                break;
-            case UCamIII::ERR_PARAMETER:
-                std::cout << "Parameter error";
-                break;
-            case UCamIII::ERR_SEND_REGISTER_TIMEOUT:
-                std::cout << "Send register timeout";
-                break;
-            case UCamIII::ERR_COMMAND_ID:
-                std::cout << "Command ID error";
-                break;
-            case UCamIII::ERR_PICTURE_NOT_READY:
-                std::cout << "Picture not ready";
-                break;
-            case UCamIII::ERR_TRANSFER_PACKAGE_NUM:
-                std::cout << "Transfer package number error";
-                break;
-            case UCamIII::ERR_SET_TRANSFER_PACKAGE_SIZE_WRONG:
-                std::cout << "Set transfer package size wrong";
-                break;
-            case UCamIII::ERR_COMMAND_HEADER:
-                std::cout << "Command header error";
-                break;
-            case UCamIII::ERR_COMMAND_LENGTH:
-                std::cout << "Command length error";
-                break;
-            case UCamIII::ERR_SEND_PICTURE:
-                std::cout << "Send picture error";
-                break;
-            case UCamIII::ERR_SEND_COMMAND:
-                std::cout << "Send command error";
-                break;
-            default:
-                std::cout << "Unknown error";
-                break;
-        }
-
-        std::cout << std::endl;
-    }
+    // UCam parameters
+    enum Params {
+        NUM_CMD_BYTES = 6,     // Number of bytes in one command
+        CMD_PREFIX    = 0xAA,  // First byte of all commands
+        MAX_PKG_SIZE  = 512,   // Bytes
+        MAX_TRIES     = 60     // Max number of tries for SYNC during synchronization
+    };
 };
 
 #endif //RAPIDCDH_UCAM_III_H

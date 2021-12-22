@@ -4,7 +4,6 @@
 #include <thread>
 
 #include <wiringPi.h>
-#include <wiringSerial.h>
 
 #include "globals.h"
 #include "sensors/UCamIII.h"
@@ -20,13 +19,18 @@ int main() {
         cout << "WiringPi set up" << endl;
     }
 
-    UCamIII ucam(SERIAL_DEV_0, SERIAL_BAUD_RATE, UCAM_RESET_PIN);
+    std::ofstream fout;
+    fout.open("img.jpeg");
+    UCamIII ucam(SERIAL_DEV_0, SERIAL_BAUD_RATE, UCAM_RESET_PIN,
+                 UCamIII::FMT_JPEG, UCamIII::RAW_160x120, UCamIII::JPEG_640x480, fout);
 
     try {
-        ucam.initialize();
-    } catch (UCamIIIException &e) {
-        cout << "UCam initialization failed" << endl;
+        ucam.init();
+    } catch (std::runtime_error &e) {
+        cout << e.what() << endl;
     }
+
+    fout.close();
 
     return 0;
 }
