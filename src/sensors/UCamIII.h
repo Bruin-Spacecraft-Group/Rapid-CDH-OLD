@@ -150,6 +150,9 @@ private:
         MAX_PKG_SIZE  = 512,   // Bytes
         MAX_TRIES     = 60     // Max number of tries for SYNC during synchronization
     };
+
+    static void print_cmd(int* cmd) ;
+    static void print_cmd(uint8_t * cmd) ;
 };
 
 #endif //RAPIDCDH_UCAM_III_H

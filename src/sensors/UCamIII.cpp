@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <string>
 #include <cmath>
 
@@ -44,7 +45,7 @@ void UCamIII::sync() const {
     // Send SYNC command until ACK command is received
     for (int i = 0; i < MAX_TRIES; i++) {
         // Send SYNC command
-        send_cmd(CMD_SYNC);
+        send_cmd_unchecked(CMD_SYNC);
 
         // Check if ACK command received
         receive_cmd(data);
@@ -74,9 +75,9 @@ void UCamIII::hard_reset() const {
 
 void UCamIII::soft_reset(uint8_t rst_type, bool immediate) const {
     if (immediate) {
-        send_cmd_unchecked(CMD_RESET, rst_type);
+        send_cmd(CMD_RESET, rst_type);
     } else {
-        send_cmd_unchecked(CMD_RESET, rst_type, 0, 0, 0xFF);
+        send_cmd(CMD_RESET, rst_type, 0, 0, 0xFF);
     }
 }
 
@@ -86,11 +87,8 @@ void UCamIII::send_cmd_unchecked(int cmd, uint8_t param1, uint8_t param2, uint8_
         serialPutchar(m_serial_port, i);
     }
 
-    cout << "UCAM: Sent: ";
-    for (unsigned char i : data) {
-        cout << i;
-    }
-    cout << endl;
+    cout << "UCam Sent: ";
+    print_cmd(data);
 }
 
 void UCamIII::send_cmd(int cmd, uint8_t param1, uint8_t param2, uint8_t param3, uint8_t param4) const {
@@ -114,13 +112,11 @@ void UCamIII::receive_cmd(int* data) const {
     }
 
     if (i == NUM_CMD_BYTES) {
-        cout << "UCAM: Received: ";
-        for (int j = 0; j < NUM_CMD_BYTES; j++) {
-            cout << data[j];
-        }
+        cout << "UCam Received: ";
+        print_cmd(data);
         cout << endl;
     } else {
-        cout << "UCAM: No data received" << endl;
+        cout << "UCam: No data received" << endl;
     }
 }
 
@@ -140,6 +136,69 @@ void UCamIII::set_package_size(int size) {
     } else {
         m_pkg_size = size;
     }
+}
+
+void UCamIII::set_baud_rate(int baud_rate) {
+    uint8_t first_divider, second_divider = 0;
+
+    switch (baud_rate) {
+        case 2400:
+        case 4800:
+        case 9600:
+        case 19200:
+        case 38400:
+        case 57600:
+        case 115200:
+            first_divider = 31;
+            break;
+        case 153600:
+        case 230400:
+        case 460800:
+            first_divider = 7;
+            break;
+        case 921600:
+        case 1843200:
+            first_divider = 1;
+            break;
+        case 1228800:
+            first_divider = 2;
+            break;
+        case 3686400:
+            first_divider = 0;
+            break;
+        default:
+            throw UCamIIIException("Unsupported baud rate");
+    }
+
+    switch (baud_rate) {
+        case 2400:
+            second_divider = 47;
+            break;
+        case 4800:
+            second_divider = 23;
+            break;
+        case 9600:
+            second_divider = 11;
+            break;
+        case 19200:
+            second_divider = 5;
+            break;
+        case 38400:
+        case 153600:
+            second_divider = 2;
+            break;
+        case 57600:
+        case 230400:
+        case 921600:
+            second_divider = 1;
+            break;
+        default:
+            break;
+    }
+
+    send_cmd_unchecked(CMD_SET_BAUD_RATE, first_divider, second_divider);
+
+    m_baud_rate = baud_rate;
 }
 
 void UCamIII::set_light_freq(uint8_t light_freq) {
@@ -292,4 +351,18 @@ void UCamIII::write_raw_data(int len) const {
     send_cmd_unchecked(CMD_ACK, CMD_DATA, 0, 1);
 
     serialFlush(m_serial_port);
+}
+
+void UCamIII::print_cmd(int *cmd) {
+    for (int i = 0; i < NUM_CMD_BYTES; i++) {
+        cout << std::setfill('0') << std::setw(2) << std::hex << cmd[i] << ' ';
+    }
+    cout << endl;
+}
+
+void UCamIII::print_cmd(uint8_t *cmd) {
+    for (int i = 0; i < NUM_CMD_BYTES; i++) {
+        cout << std::setfill('0') << std::setw(2) << std::hex << (int) cmd[i] << ' ';
+    }
+    cout << endl;
 }
