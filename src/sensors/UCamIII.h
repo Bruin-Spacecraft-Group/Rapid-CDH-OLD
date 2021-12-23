@@ -13,18 +13,23 @@ public:
     ~UCamIII();
 
     void init();
-    void hardware_reset() const;
+    void sync() const;
+    void hard_reset() const;
+    void soft_reset(uint8_t rst_type, bool immediate = false) const;
 
     void send_cmd_unchecked(int cmd, uint8_t param1 = 0, uint8_t param2 = 0, uint8_t param3 = 0, uint8_t param4 = 0) const;
     void send_cmd(int cmd, uint8_t param1 = 0, uint8_t param2 = 0, uint8_t param3 = 0, uint8_t param4 = 0) const;
     void receive_cmd(int* data) const;
 
-    void sync() const;
     void initial(uint8_t img_format, uint8_t raw_res, uint8_t jpeg_res);
     void set_package_size(int size);
+    void set_baud_rate(int baud_rate);
+    void set_light_freq(uint8_t light_freq);
+    void set_tone(uint8_t contrast, uint8_t brightness, uint8_t exposure);
+    void set_sleep_timeout(uint8_t timeout);
+
     void snapshot(uint8_t snapshot_type, int skipped_frames = 0) const;
     [[nodiscard]] int get_picture(uint8_t picture_type) const;
-
     void write_jpeg_data(int len) const;
     void write_raw_data(int len) const;
 
@@ -77,7 +82,7 @@ public:
     };
 
     enum ResetType {
-        RST_ALL,            // Resets the whole system. The uCAM-III will reboot and reset all registers and state machines.
+        RST_ALL,            // Resets the whole system. The uCAM-III will reboot and soft_reset all registers and state machines.
         RST_STATE_MACHINES  // Resets the state machines only
     };
 
@@ -105,7 +110,7 @@ public:
         ERR_SEND_COMMAND
     };
 
-    enum LightFreqType { // Hz
+    enum LightFreq { // Hz
         FREQ_50,
         FREQ_60
     };
@@ -129,6 +134,12 @@ private:
     uint8_t m_img_format;
     uint8_t m_raw_res;
     uint8_t m_jpeg_res;
+
+    uint8_t m_light_freq;                  // Hz
+    uint8_t m_contrast      = TONE_NORMAL;
+    uint8_t m_brightness    = TONE_NORMAL;
+    int8_t  m_exposure      = 0;
+    uint8_t m_sleep_timeout = 15;          // Seconds
 
     std::ofstream& m_fout;
 

@@ -20,12 +20,17 @@ int main() {
     }
 
     std::ofstream fout;
-    fout.open("img.jpeg");
+    fout.open("../build/img_data/img.jpeg");
     UCamIII ucam(SERIAL_DEV_0, SERIAL_BAUD_RATE, UCAM_RESET_PIN,
                  UCamIII::FMT_JPEG, UCamIII::RAW_160x120, UCamIII::JPEG_640x480, fout);
 
     try {
         ucam.init();
+
+//        ucam.set_package_size(512);
+//        ucam.snapshot(UCamIII::SNAP_JPEG);
+//        int len = ucam.get_picture(UCamIII::PIC_SNAPSHOT);
+//        ucam.write_jpeg_data(len);
     } catch (std::runtime_error &e) {
         cout << e.what() << endl;
     }

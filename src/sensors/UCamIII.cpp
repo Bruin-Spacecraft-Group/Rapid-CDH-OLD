@@ -28,7 +28,7 @@ void UCamIII::init() {
     }
 
     // Synchronization
-    hardware_reset();
+    hard_reset();
     sync();
 
     // Allow AGC and AEC circuits to stabilize
@@ -38,12 +38,46 @@ void UCamIII::init() {
     send_cmd(CMD_INITIAL, 0, m_img_format, m_raw_res, m_jpeg_res);
 }
 
-void UCamIII::hardware_reset() const {
+void UCamIII::sync() const {
+    int data[NUM_CMD_BYTES];
+
+    // Send SYNC command until ACK command is received
+    for (int i = 0; i < MAX_TRIES; i++) {
+        // Send SYNC command
+        send_cmd(CMD_SYNC);
+
+        // Check if ACK command received
+        receive_cmd(data);
+        if (data[0] == CMD_PREFIX && data[1] == CMD_ACK && data[2] == CMD_SYNC) {
+            // Check if SYNC command received
+            receive_cmd(data);
+            if (data[0] == CMD_PREFIX && data[1] == CMD_SYNC) {
+                // Respond with ACK command
+                send_cmd_unchecked(CMD_ACK, CMD_SYNC);
+                return;
+            }
+        }
+
+        delay(5 + i);
+    }
+
+    throw UCamIIIException("Synchronization failed after " + std::to_string(MAX_TRIES) + " tries");
+}
+
+void UCamIII::hard_reset() const {
     pinMode(m_rst_pin, OUTPUT);
     digitalWrite(m_rst_pin, LOW);
     delay(10);
     pinMode(m_rst_pin, INPUT);
     delay(10);
+}
+
+void UCamIII::soft_reset(uint8_t rst_type, bool immediate) const {
+    if (immediate) {
+        send_cmd_unchecked(CMD_RESET, rst_type);
+    } else {
+        send_cmd_unchecked(CMD_RESET, rst_type, 0, 0, 0xFF);
+    }
 }
 
 void UCamIII::send_cmd_unchecked(int cmd, uint8_t param1, uint8_t param2, uint8_t param3, uint8_t param4) const {
@@ -90,32 +124,6 @@ void UCamIII::receive_cmd(int* data) const {
     }
 }
 
-void UCamIII::sync() const {
-    int data[NUM_CMD_BYTES];
-
-    // Send SYNC command until ACK command is received
-    for (int i = 0; i < MAX_TRIES; i++) {
-        // Send SYNC command
-        send_cmd(CMD_SYNC);
-
-        // Check if ACK command received
-        receive_cmd(data);
-        if (data[0] == CMD_PREFIX && data[1] == CMD_ACK && data[2] == CMD_SYNC) {
-            // Check if SYNC command received
-            receive_cmd(data);
-            if (data[0] == CMD_PREFIX && data[1] == CMD_SYNC) {
-                // Respond with ACK command
-                send_cmd_unchecked(CMD_ACK, CMD_SYNC);
-                return;
-            }
-        }
-
-        delay(5 + i);
-    }
-
-    throw UCamIIIException("Synchronization failed after " + std::to_string(MAX_TRIES) + " tries");
-}
-
 void UCamIII::initial(uint8_t img_format, uint8_t raw_res, uint8_t jpeg_res) {
     send_cmd(CMD_INITIAL, 0, img_format, raw_res, jpeg_res);
 
@@ -132,6 +140,54 @@ void UCamIII::set_package_size(int size) {
     } else {
         m_pkg_size = size;
     }
+}
+
+void UCamIII::set_light_freq(uint8_t light_freq) {
+    send_cmd_unchecked(CMD_LIGHT, light_freq);
+
+    switch (light_freq) {
+        case FREQ_50:
+            m_light_freq = 50;
+            break;
+        case FREQ_60:
+            m_light_freq = 60;
+            break;
+        default:
+            break;
+    }
+}
+
+void UCamIII::set_tone(uint8_t contrast, uint8_t brightness, uint8_t exposure) {
+    send_cmd_unchecked(CMD_SET_TONE, contrast, brightness, exposure);
+
+    m_contrast = contrast;
+    m_brightness = brightness;
+
+    switch (exposure) {
+        case TONE_MIN:
+            m_exposure = -2;
+            break;
+        case TONE_LOW:
+            m_exposure = -1;
+            break;
+        case TONE_NORMAL:
+            m_exposure = 0;
+            break;
+        case TONE_HIGH:
+            m_exposure = 1;
+            break;
+        case TONE_MAX:
+            m_exposure = 2;
+            break;
+        default:
+            break;
+    }
+}
+
+void UCamIII::set_sleep_timeout(uint8_t timeout) {
+    send_cmd_unchecked(CMD_SLEEP, timeout);
+
+    m_sleep_timeout = timeout;
 }
 
 void UCamIII::snapshot(uint8_t snapshot_type, int skipped_frames) const {
