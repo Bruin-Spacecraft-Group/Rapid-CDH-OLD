@@ -39,3 +39,4 @@ build/
 # Other
 *.tar.gz
 .idea/
+img_data/

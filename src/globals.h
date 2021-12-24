@@ -2,10 +2,10 @@
 #define GLOBALS_H
 
 // WiringPi pins
-const int UCAM_RESET_PIN = 7;
+const uint8_t UCAM_RESET_PIN = 7;
 
 // Serial
 const char* SERIAL_DEV_0 = "/dev/ttyAMA0";
-const int SERIAL_BAUD_RATE = 9600;
+const uint32_t SERIAL_BAUD_RATE = 921600;
 
 #endif
