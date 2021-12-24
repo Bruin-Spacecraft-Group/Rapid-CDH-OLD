@@ -13,7 +13,7 @@ pi@raspberrypi:~ $ git clone https://github.com/WiringPi/WiringPi.git
 Then install it with their build script:
 
 ```
-pi@raspberrypi:~ $ ./build
+pi@raspberrypi:~/WiringPi $ ./build
 ```
 
 ### Remote development
@@ -35,17 +35,17 @@ pi@raspberrypi:~ $ git clone https://github.com/Bruin-Spacecraft-Group/RapidCDH.
 
 Finally, run the setup script (you only need to do this once):
 ```
-pi@raspberrypi:~ $ ./setup.sh
+pi@raspberrypi:~/RapidCDH $ ./setup.sh
 ```
 
 Now you can build the project:
 ```
-pi@raspberrypi:~ $ ./build.sh
+pi@raspberrypi:~/RapidCDH $ ./build.sh
 ```
 
 And run the executable:
 ```
-pi@raspberrypi:~ $ ./build/RapidCDH
+pi@raspberrypi:~/RapidCDH $ ./build/RapidCDH
 ```
 
 ### Cross-compiling
