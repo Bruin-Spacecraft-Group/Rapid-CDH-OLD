@@ -9,7 +9,7 @@
 class UCamIII {
 public:
     UCamIII(const char* serial_dev, int baud_rate, int rst_pin,
-            uint8_t img_format, uint8_t raw_res, uint8_t jpeg_res, std::ofstream& fout);
+            uint8_t img_format, uint8_t resolution, std::ofstream& fout);
     ~UCamIII();
 
     void init();
@@ -17,11 +17,12 @@ public:
     void hard_reset() const;
     void soft_reset(uint8_t rst_type, bool immediate = false) const;
 
-    void send_cmd_unchecked(int cmd, uint8_t param1 = 0, uint8_t param2 = 0, uint8_t param3 = 0, uint8_t param4 = 0) const;
-    void send_cmd(int cmd, uint8_t param1 = 0, uint8_t param2 = 0, uint8_t param3 = 0, uint8_t param4 = 0) const;
-    void receive_cmd(int* data) const;
+    void send_cmd_unchecked(int cmd, uint8_t param1 = 0x00, uint8_t param2 = 0x00, uint8_t param3 = 0x00, uint8_t param4 = 0x00) const;
+    void send_cmd(int cmd, uint8_t param1 = 0x00, uint8_t param2 = 0x00, uint8_t param3 = 0x00, uint8_t param4 = 0x00) const;
+    void receive_cmd(int* data, int len = NUM_CMD_BYTES) const;
+    void receive_cmd_wait(int* data, int len = NUM_CMD_BYTES) const;
 
-    void initial(uint8_t img_format, uint8_t raw_res, uint8_t jpeg_res);
+    void initial(uint8_t img_format, uint8_t resolution);
     void set_package_size(int size);
     void set_baud_rate(int baud_rate);
     void set_light_freq(uint8_t light_freq);
@@ -128,12 +129,12 @@ private:
     const char* m_serial_dev;
     int m_baud_rate;
     int m_serial_port;
+    int m_serial_timeout = 500; // ms
     int m_rst_pin;
 
     int m_pkg_size;
     uint8_t m_img_format;
-    uint8_t m_raw_res;
-    uint8_t m_jpeg_res;
+    uint8_t m_resolution;
 
     uint8_t m_light_freq;                  // Hz
     uint8_t m_contrast      = TONE_NORMAL;
@@ -151,8 +152,8 @@ private:
         MAX_TRIES     = 60     // Max number of tries for SYNC during synchronization
     };
 
-    static void print_cmd(int* cmd) ;
-    static void print_cmd(uint8_t * cmd) ;
+    static void print_cmd(int* cmd, int len = NUM_CMD_BYTES) ;
+    static void print_cmd(uint8_t * cmd, int len = NUM_CMD_BYTES) ;
 };
 
 #endif //RAPIDCDH_UCAM_III_H

@@ -14,15 +14,18 @@ using std::cout;
 using std::endl;
 
 UCamIII::UCamIII(const char* serial_dev, int baud_rate, int rst_pin,
-                 uint8_t img_format, uint8_t raw_res, uint8_t jpeg_res, std::ofstream& fout)
+                 uint8_t img_format, uint8_t resolution, std::ofstream& fout)
     : m_serial_dev(serial_dev), m_baud_rate(baud_rate), m_serial_port(0), m_rst_pin(rst_pin),
-        m_pkg_size(0), m_img_format(img_format), m_raw_res(raw_res), m_jpeg_res(jpeg_res), m_fout(fout) {}
+        m_pkg_size(0), m_img_format(img_format), m_resolution(resolution), m_fout(fout) {}
 
 UCamIII::~UCamIII() {
     serialClose(m_serial_port);
 }
 
 void UCamIII::init() {
+    pinMode(m_rst_pin, OUTPUT);
+    digitalWrite(m_rst_pin, HIGH);
+
     // Open serial connection
     if ((m_serial_port = serialOpen(m_serial_dev, m_baud_rate)) < 0) {
         throw WiringPiException(("Unable to open serial device: " + string(m_serial_dev)));
@@ -33,10 +36,11 @@ void UCamIII::init() {
     sync();
 
     // Allow AGC and AEC circuits to stabilize
-    delay(2000);
+//    delay(2000);
 
     // Configuration
-    send_cmd(CMD_INITIAL, 0, m_img_format, m_raw_res, m_jpeg_res);
+    send_cmd(CMD_INITIAL, 0x00, m_img_format, m_resolution, m_resolution);
+    send_cmd(CMD_INITIAL, 0x00, m_img_format, m_resolution, m_resolution);
 }
 
 void UCamIII::sync() const {
@@ -55,6 +59,9 @@ void UCamIII::sync() const {
             if (data[0] == CMD_PREFIX && data[1] == CMD_SYNC) {
                 // Respond with ACK command
                 send_cmd_unchecked(CMD_ACK, CMD_SYNC);
+
+                serialFlush(m_serial_port);
+                cout << "Synchronization completed" << endl << endl;
                 return;
             }
         }
@@ -66,18 +73,17 @@ void UCamIII::sync() const {
 }
 
 void UCamIII::hard_reset() const {
-    pinMode(m_rst_pin, OUTPUT);
     digitalWrite(m_rst_pin, LOW);
     delay(10);
-    pinMode(m_rst_pin, INPUT);
+    digitalWrite(m_rst_pin, HIGH);
     delay(10);
 }
 
 void UCamIII::soft_reset(uint8_t rst_type, bool immediate) const {
     if (immediate) {
-        send_cmd(CMD_RESET, rst_type);
+        send_cmd(CMD_RESET, rst_type, 0x00, 0x00, 0xFF);
     } else {
-        send_cmd(CMD_RESET, rst_type, 0, 0, 0xFF);
+        send_cmd(CMD_RESET, rst_type);
     }
 }
 
@@ -96,40 +102,60 @@ void UCamIII::send_cmd(int cmd, uint8_t param1, uint8_t param2, uint8_t param3, 
 
     // Check response
     int data[NUM_CMD_BYTES];
-    receive_cmd(data);
+    receive_cmd_wait(data);
     if (data[0] == CMD_PREFIX && data[1] == CMD_NAK) {
         throw UCamIIIException(data[4]);
-    } else if (data[0] != CMD_PREFIX && data[1] != CMD_ACK && data[2] != cmd) {
+    } else if (data[0] != CMD_PREFIX || data[1] != CMD_ACK || data[2] != cmd) {
         throw UCamIIIException("Command verification not received " + std::to_string(cmd));
     }
 }
 
-void UCamIII::receive_cmd(int* data) const {
+void UCamIII::receive_cmd(int* data, int len) const {
     int i = 0;
-    while (serialDataAvail(m_serial_port) > 0 && i < NUM_CMD_BYTES) {
+    while (serialDataAvail(m_serial_port) > 0 && i < len) {
         data[i] = serialGetchar(m_serial_port);
         i++;
     }
 
-    if (i == NUM_CMD_BYTES) {
-        cout << "UCam Received: ";
-        print_cmd(data);
-        cout << endl;
-    } else {
+    if (i == 0) {
         cout << "UCam: No data received" << endl;
+    } else {
+        cout << "UCam Received " << i << " bytes: ";
+        print_cmd(data, i);
     }
 }
 
-void UCamIII::initial(uint8_t img_format, uint8_t raw_res, uint8_t jpeg_res) {
-    send_cmd(CMD_INITIAL, 0, img_format, raw_res, jpeg_res);
+void UCamIII::receive_cmd_wait(int* data, int len) const {
+    int time_waited = 0;
+    int i = 0;
+
+    while (i < len && time_waited < m_serial_timeout) {
+        if (serialDataAvail(m_serial_port) == 0) {
+            delay(10);
+            time_waited += 10;
+        } else if (serialDataAvail(m_serial_port) > 0) {
+            data[i] = serialGetchar(m_serial_port);
+            i++;
+        }
+    }
+
+    if (i == 0) {
+        cout << "UCam: No data received" << endl;
+    } else {
+        cout << "UCam Received " << i << " bytes: ";
+        print_cmd(data, i);
+    }
+}
+
+void UCamIII::initial(uint8_t img_format, uint8_t resolution) {
+    send_cmd(CMD_INITIAL, 0x00, img_format, resolution, resolution);
 
     m_img_format = img_format;
-    m_raw_res = raw_res;
-    m_jpeg_res = jpeg_res;
+    m_resolution = resolution;
 }
 
 void UCamIII::set_package_size(int size) {
-    send_cmd(CMD_SET_PACKAGE_SIZE, 0x8, (size & 0xFF), (size >> 8) & 0xFF);
+    send_cmd(CMD_SET_PACKAGE_SIZE, 0x08, (size & 0xFF), (size >> 8) & 0xFF);
 
     if (size > MAX_PKG_SIZE) {
         m_pkg_size = MAX_PKG_SIZE;
@@ -353,15 +379,15 @@ void UCamIII::write_raw_data(int len) const {
     serialFlush(m_serial_port);
 }
 
-void UCamIII::print_cmd(int *cmd) {
-    for (int i = 0; i < NUM_CMD_BYTES; i++) {
+void UCamIII::print_cmd(int *cmd, int len) {
+    for (int i = 0; i < len; i++) {
         cout << std::setfill('0') << std::setw(2) << std::hex << cmd[i] << ' ';
     }
     cout << endl;
 }
 
-void UCamIII::print_cmd(uint8_t *cmd) {
-    for (int i = 0; i < NUM_CMD_BYTES; i++) {
+void UCamIII::print_cmd(uint8_t *cmd, int len) {
+    for (int i = 0; i < len; i++) {
         cout << std::setfill('0') << std::setw(2) << std::hex << (int) cmd[i] << ' ';
     }
     cout << endl;

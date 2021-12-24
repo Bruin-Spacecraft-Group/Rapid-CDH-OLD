@@ -20,9 +20,9 @@ int main() {
     }
 
     std::ofstream fout;
-    fout.open("../build/img_data/img.jpeg");
+    fout.open("img.jpeg");
     UCamIII ucam(SERIAL_DEV_0, SERIAL_BAUD_RATE, UCAM_RESET_PIN,
-                 UCamIII::FMT_JPEG, UCamIII::RAW_160x120, UCamIII::JPEG_640x480, fout);
+                 UCamIII::FMT_JPEG, UCamIII::JPEG_640x480, fout);
 
     try {
         ucam.init();
