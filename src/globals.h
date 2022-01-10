@@ -1,11 +1,21 @@
-#ifndef GLOBALS_H
-#define GLOBALS_H
+#ifndef RAPIDCDH_GLOBALS_H
+#define RAPIDCDH_GLOBALS_H
 
-// WiringPi pins
-const uint8_t UCAM_RESET_PIN = 7;
+namespace constants {
+    inline constexpr bool DEBUG = true;
 
-// Serial
-const char* SERIAL_DEV_0 = "/dev/ttyAMA0";
-const uint32_t SERIAL_BAUD_RATE = 921600;
+    // WiringPi pins
+    inline constexpr uint8_t UCAM_RESET_PIN = 7;
+
+    // Serial
+    inline const char* SERIAL_DEV_0 = "/dev/ttyAMA0";
+    inline constexpr uint32_t SERIAL_BAUD_RATE = 921600;
+}
+
+// Error codes
+enum Status {
+    SUCCESS,
+    FAILURE,
+};
 
 #endif

@@ -93,6 +93,23 @@ probably get an error like:
 The file './build/RapidCDH' is marked as an executable but could not be run by the operating system.
 ```
 
+## Style Guide
+
+### Naming
+
+- `snake_case` for variable, function, and namespace names
+- `PascalCase` for class names
+- Private member variables are prefixed with `m_`
+
+## Error Handling
+
+Functions that can fail return a `Status`, and should be marked `[[nodiscard]]` to ensure that the caller checks the
+returned value.
+
+## Good Practices
+
+1. Use fixed width integer types wherever possible, i.e. `uint32_t` instead of `int`. These types are defined in the `<cstdint>` header.
+
 ## Making a new branch
 To make a new branch, run:
 
