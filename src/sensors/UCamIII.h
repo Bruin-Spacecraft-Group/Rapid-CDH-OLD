@@ -6,6 +6,8 @@
 #include <string>
 #include <cstdint>
 
+#include "../globals.h"
+
 class UCamIII {
 public:
     // Enum forward declarations
@@ -23,25 +25,25 @@ public:
             uint8_t img_format, uint8_t resolution, std::ofstream& fout);
     ~UCamIII();
 
-    void init();
-    void sync() const;
+    [[nodiscard]] Status init();
+    [[nodiscard]] Status sync() const;
     void hard_reset() const;
-    void soft_reset(ResetType rst_type, bool immediate = false) const;
+    [[nodiscard]] Status soft_reset(ResetType rst_type, bool immediate = false) const;
 
     void send_cmd_unchecked(CmdID cmd, uint8_t param1 = 0x00, uint8_t param2 = 0x00, uint8_t param3 = 0x00, uint8_t param4 = 0x00) const;
-    void send_cmd(CmdID cmd, uint8_t param1 = 0x00, uint8_t param2 = 0x00, uint8_t param3 = 0x00, uint8_t param4 = 0x00) const;
-    void receive_cmd(uint8_t* data, uint8_t len = NUM_CMD_BYTES, uint16_t timeout = 500) const;
+    [[nodiscard]] Status send_cmd(CmdID cmd, uint8_t param1 = 0x00, uint8_t param2 = 0x00, uint8_t param3 = 0x00, uint8_t param4 = 0x00) const;
+    [[nodiscard]] Status receive_cmd(uint8_t* data, uint8_t len = NUM_CMD_BYTES, uint16_t timeout = 500) const;
 
-    void initial(ImgFormat img_format, Resolution resolution);
-    void set_package_size(uint32_t size);
-    void set_baud_rate(uint32_t baud_rate);
+    [[nodiscard]] Status initial(ImgFormat img_format, Resolution resolution);
+    [[nodiscard]] Status set_package_size(uint32_t size);
+    [[nodiscard]] Status set_baud_rate(uint32_t baud_rate);
     void set_light_freq(LightFreq light_freq);
     void set_tone(Tone contrast, Tone brightness, Tone exposure);
     void set_sleep_timeout(uint8_t timeout);
 
-    void snapshot(SnapshotType snapshot_type, uint16_t skipped_frames = 0) const;
-    [[nodiscard]] uint32_t get_picture(PictureType picture_type) const;
-    void write_jpeg_data(uint32_t len) const;
+    [[nodiscard]] Status snapshot(SnapshotType snapshot_type, uint16_t skipped_frames = 0) const;
+    [[nodiscard]] Status get_picture(PictureType picture_type, uint32_t& len) const;
+    [[nodiscard]] Status write_jpeg_data(uint32_t len) const;
     void write_raw_data(uint32_t len) const;
 
     // Enums
