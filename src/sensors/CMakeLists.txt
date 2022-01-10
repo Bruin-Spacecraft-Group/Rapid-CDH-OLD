@@ -4,4 +4,6 @@ target_sources(sensorsLib
         ina260.h
         UCamIII.cpp
         UCamIII.h
+        LSM6DS33.cpp
+        LSM6DS33.h
 )

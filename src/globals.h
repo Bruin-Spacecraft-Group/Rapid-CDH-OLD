@@ -10,6 +10,9 @@ namespace constants {
     // Serial
     inline const char* SERIAL_DEV_0 = "/dev/ttyAMA0";
     inline constexpr uint32_t SERIAL_BAUD_RATE = 921600;
+
+    // I2C
+    inline constexpr uint8_t LSM6DS33_DEV_ID = 0b110101;
 }
 
 // Error codes
