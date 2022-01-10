@@ -33,10 +33,8 @@ Status UCamIII::init() {
 
     // Synchronization
     hard_reset();
-    if (Status s = sync();
-        s != SUCCESS) {
-        return s;
-    }
+    Status status = sync();
+    if (!status) return status;
 
     // Allow AGC and AEC circuits to stabilize
     delay(2000);
