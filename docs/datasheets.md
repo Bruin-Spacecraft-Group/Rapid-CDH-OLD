@@ -3,6 +3,7 @@
 - C&DH
     - [R2023T-E2-F](https://www.mouser.com/datasheet/2/792/r2023_ea-1901332.pdf) (RTC)
 - ADCS
+    - [LSM6DS33](https://www.mouser.com/datasheet/2/389/dm00157718-1798631.pdf) (IMU)
     - [UM7](https://www.pololu.com/file/0J1556/UM7%20Datasheet_v1-8_30.07.2018.pdf) (IMU)
     - [uCAM-III](https://4dsystems.com.au/mwdownloads/download/link/id/420/) (Camera)
 - EPS
