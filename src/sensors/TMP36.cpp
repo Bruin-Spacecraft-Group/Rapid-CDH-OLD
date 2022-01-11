@@ -1,10 +1,10 @@
 #include "TMP36.h"
 
-#include "ina260.h"
+#include "ADS7828.h"
 
-TMP36::TMP36(ina260* sensor) : voltageAtZero(0.5), voltagePerDegree(0.01), sensor(sensor) {}
+TMP36::TMP36(ADS7828* sensor) : voltageAtZero(0.5), voltagePerDegree(0.01), sensor(sensor) {}
 
 double TMP36::getTemperature() {
 	// using V = vAtZero + T * vPerDeg
-	return (sensor->readVoltage_mV() * 1000 - voltageAtZero) / voltagePerDegree;
+	return (sensor->readChannelCommonAnode(channel)) * 1000 - voltageAtZero) / voltagePerDegree;
 }
