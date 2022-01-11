@@ -23,6 +23,13 @@ public:
     [[nodiscard]] Status set_gyro_settings(ODR odr, GyroFS fs = G_FS_250DPS);
 
     [[nodiscard]] Status write_reg(RegAddr reg, uint8_t data) const;
+    [[nodiscard]] Status read_reg_8(RegAddr reg, uint8_t& data) const;
+    [[nodiscard]] Status read_reg_16(RegAddr reg, uint16_t& data) const;
+
+    [[nodiscard]] Status read_new_data();
+
+    void print_data() const;
+    void print_settings() const;
 
     // Enums
 
@@ -73,7 +80,7 @@ public:
     // FIFO ODR
     // Set ODR_FIFO[3:0] in FIFO_CTRL5
     enum FifoODR: uint8_t {
-        FIFO_DISABLED,
+        FIFO_DISABLED, // Default
         FIFO_ODR_12_5HZ,
         FIFO_ODR_26HZ,
         FIFO_ODR_52HZ,
@@ -89,7 +96,7 @@ public:
     // FIFO mode selection
     // Set FIFO_MODE[2:0] in FIFO_CTRL5
     enum FifoMode: uint8_t {
-        FIFO_MODE_BYPASS         = 0b000,
+        FIFO_MODE_BYPASS         = 0b000, // Default
         FIFO_MODE_FIFO           = 0b001,
         FIFO_MODE_CONT_TO_FIFO   = 0b011,
         FIFO_MODE_BYPASS_TO_CONT = 0b100,
@@ -191,19 +198,36 @@ public:
         MD2_CFG           = 0x5F,
     };
 
+
 private:
     const char* m_i2c_dev;
     uint8_t m_dev_id;
     uint32_t m_i2c_fd;
 
-    // Accel settings
-    uint32_t m_accel_odr;      // Hz
-    uint8_t m_accel_fs  = 2;   // +/- g
-    uint16_t m_accel_bw = 400; // Hz
+    // Control registers
+    uint8_t m_accel_ctrl = 0;
+    uint8_t m_gyro_ctrl  = 0;
 
-    // Gyro settings
-    uint32_t m_gyro_odr;      // Hz
-    uint16_t m_gyro_fs = 250; // dps
+    // Raw output data
+    uint16_t m_out_temp;
+    uint16_t m_out_gyro_x, m_out_gyro_y, m_out_gyro_z;
+    uint16_t m_out_accel_x, m_out_accel_y, m_out_accel_z;
+
+    // Temperature sensitivity: LSB/degree C
+    static constexpr float TEMP_SENS = 16.0;
+
+    // Accelerometer sensitivity: mg/LSB
+    static constexpr float A_SENS_2G  = 0.061;
+    static constexpr float A_SENS_4G  = 0.122;
+    static constexpr float A_SENS_8G  = 0.244;
+    static constexpr float A_SENS_16G = 0.488;
+
+    // Gyroscope sensitivity: mdps/LSB
+    static constexpr float G_SENS_125DPS  = 4.375;
+    static constexpr float G_SENS_250DPS  = 8.75;
+    static constexpr float G_SENS_500DPS  = 17.50;
+    static constexpr float G_SENS_1000DPS = 35;
+    static constexpr float G_SENS_2000DPS = 70;
 
     static uint32_t enum_to_odr(ODR odr);
 };
