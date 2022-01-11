@@ -8,12 +8,21 @@
 class LSM6DS33 {
 public:
     // Enum forward declarations
-    enum RegAddr: uint8_t;
-    enum ODR: uint8_t;
+    enum RegAddr : uint8_t;
+    enum ODR     : uint8_t;
+    enum AccelFS : uint8_t;
+    enum AccelBW : uint8_t;
+    enum GyroFS  : uint8_t;
+    enum FifoODR : uint8_t;
+    enum FifoMode: uint8_t;
 
-    LSM6DS33(const char* i2c_dev, uint8_t dev_id);
+    explicit LSM6DS33(const char* i2c_dev, uint8_t dev_id = constants::LSM6DS33_DEV_ID);
 
     [[nodiscard]] Status init();
+    [[nodiscard]] Status set_accel_settings(ODR odr, AccelFS fs = A_FS_2G, AccelBW bw = A_BW_400HZ);
+    [[nodiscard]] Status set_gyro_settings(ODR odr, GyroFS fs = G_FS_250DPS);
+
+    [[nodiscard]] Status write_reg(RegAddr reg, uint8_t data) const;
 
     // Enums
 
@@ -31,6 +40,60 @@ public:
         ODR_1660HZ = 0b1000,
         ODR_3330HZ = 0b1001, // Accel only
         ODR_6660HZ = 0b1010  // Accel only
+    };
+
+    // Accel full-scale selection (g)
+    // Set FS_XL[1:0] in CTRL1_XL
+    enum AccelFS: uint8_t {
+        A_FS_2G, // Default
+        A_FS_4G,
+        A_FS_8G,
+        A_FS_16G
+    };
+
+    // Accelerometer anti-aliasing filter bandwidth selection
+    // Set BW_XL[1:0] in CTRL1_XL
+    enum AccelBW: uint8_t {
+        A_BW_400HZ, // Default
+        A_BW_200HZ,
+        A_BW_100HZ,
+        A_BW_50HZ
+    };
+
+    // Gyro full-scale selection (dps)
+    // Set FS_G[1:0], FS_125 in CTRL2_G
+    enum GyroFS: uint8_t {
+        G_FS_125DPS  = 0b001,
+        G_FS_250DPS  = 0b000, // Default
+        G_FS_500DPS  = 0b010,
+        G_FS_1000DPS = 0b100,
+        G_FS_2000DPS = 0b110
+    };
+
+    // FIFO ODR
+    // Set ODR_FIFO[3:0] in FIFO_CTRL5
+    enum FifoODR: uint8_t {
+        FIFO_DISABLED,
+        FIFO_ODR_12_5HZ,
+        FIFO_ODR_26HZ,
+        FIFO_ODR_52HZ,
+        FIFO_ODR_104HZ,
+        FIFO_ODR_208HZ,
+        FIFO_ODR_416HZ,
+        FIFO_ODR_833HZ,
+        FIFO_ODR_1660HZ,
+        FIFO_ODR_3330HZ,
+        FIFO_ODR_6660HZ
+    };
+
+    // FIFO mode selection
+    // Set FIFO_MODE[2:0] in FIFO_CTRL5
+    enum FifoMode: uint8_t {
+        FIFO_MODE_BYPASS         = 0b000,
+        FIFO_MODE_FIFO           = 0b001,
+        FIFO_MODE_CONT_TO_FIFO   = 0b011,
+        FIFO_MODE_BYPASS_TO_CONT = 0b100,
+        FIFO_MODE_CONT           = 0b110
     };
 
     enum RegAddr: uint8_t {
@@ -132,6 +195,18 @@ private:
     const char* m_i2c_dev;
     uint8_t m_dev_id;
     uint32_t m_i2c_fd;
+
+    // Accel settings
+    uint32_t m_accel_odr;      // Hz
+    uint8_t m_accel_fs  = 2;   // +/- g
+    uint16_t m_accel_bw = 400; // Hz
+
+    // Gyro settings
+    uint32_t m_gyro_odr;      // Hz
+    uint16_t m_gyro_fs = 250; // dps
+
+    static uint32_t enum_to_odr(ODR odr);
 };
+
 
 #endif //RAPIDCDH_LSM6DS33_H
