@@ -19,14 +19,20 @@ public:
     explicit LSM6DS33(const char* i2c_dev, uint8_t dev_id = constants::LSM6DS33_DEV_ID);
 
     [[nodiscard]] Status init();
-    [[nodiscard]] Status set_accel_settings(ODR odr, AccelFS fs = A_FS_2G, AccelBW bw = A_BW_400HZ);
-    [[nodiscard]] Status set_gyro_settings(ODR odr, GyroFS fs = G_FS_250DPS);
+    [[nodiscard]] Status set_accel(ODR odr, AccelFS fs = A_FS_2G, AccelBW bw = A_BW_400HZ);
+    [[nodiscard]] Status set_gyro(ODR odr, GyroFS fs = G_FS_250DPS);
+
+    // FIFO config
+    [[nodiscard]] Status fifo_init(FifoMode mode, FifoODR odr); // FIFO setup
+    [[nodiscard]] Status set_fifo(FifoMode mode, FifoODR odr); // Set FIFO mode and ODR
+    [[nodiscard]] Status reset_fifo() const; // Resets FIFO when in FIFO mode
 
     [[nodiscard]] Status write_reg(RegAddr reg, uint8_t data) const;
     [[nodiscard]] Status read_reg_8(RegAddr reg, uint8_t& data) const;
     [[nodiscard]] Status read_reg_16(RegAddr reg, uint16_t& data) const;
 
-    [[nodiscard]] Status read_new_data();
+    [[nodiscard]] Status read_new_data(); // Checks for new data and reads from OUT registers
+    [[nodiscard]] Status read_fifo(); // Read from FIFO registers
 
     void print_data() const;
     void print_settings() const;
@@ -103,6 +109,7 @@ public:
         FIFO_MODE_CONT           = 0b110
     };
 
+    // Register address mapping
     enum RegAddr: uint8_t {
         // Embedded functions config
         FUNC_CFG_ACCESS   = 0x01,
@@ -205,8 +212,9 @@ private:
     uint32_t m_i2c_fd;
 
     // Control registers
-    uint8_t m_accel_ctrl = 0;
-    uint8_t m_gyro_ctrl  = 0;
+    uint8_t m_accel_ctrl = 0; // CTRL1_XL
+    uint8_t m_gyro_ctrl  = 0; // CTRL2_G
+    uint8_t m_fifo_ctrl  = 0; // FIFO_CTRL5
 
     // Raw output data
     uint16_t m_out_temp;

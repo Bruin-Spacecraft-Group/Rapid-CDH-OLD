@@ -52,29 +52,61 @@ Status LSM6DS33::read_reg_16(LSM6DS33::RegAddr reg, uint16_t& data) const {
     return SUCCESS;
 }
 
-Status LSM6DS33::set_accel_settings(LSM6DS33::ODR odr, LSM6DS33::AccelFS fs, LSM6DS33::AccelBW bw) {
+Status LSM6DS33::set_accel(LSM6DS33::ODR odr, LSM6DS33::AccelFS fs, LSM6DS33::AccelBW bw) {
     uint8_t data = 0b11110000 & odr;
     data |= 0b00001100 & fs;
     data |= 0b00000011 & bw;
 
     Status status = write_reg(CTRL1_XL, data);
-    if (!status) return FAILURE;
+    if (!status) return status;
 
     m_accel_ctrl = data;
 
     return SUCCESS;
 }
 
-Status LSM6DS33::set_gyro_settings(LSM6DS33::ODR odr, LSM6DS33::GyroFS fs) {
+Status LSM6DS33::set_gyro(LSM6DS33::ODR odr, LSM6DS33::GyroFS fs) {
     uint8_t data = 0b11110000 & odr;
     data |= 0b00001110 & fs;
 
     Status status = write_reg(CTRL2_G, data);
-    if (!status) return FAILURE;
+    if (!status) return status;
 
     m_gyro_ctrl = data;
 
     return SUCCESS;
+}
+
+Status LSM6DS33::fifo_init(FifoMode mode, FifoODR odr) {
+    // Set mode and odr
+    Status status = set_fifo(mode, odr);
+    if (!status) return status;
+
+    // Set BDU bit in CTRL3_C for proper reading of FIFO status control registers
+    return write_reg(CTRL3_C, 0b01000100);
+}
+
+Status LSM6DS33::set_fifo(FifoMode mode, FifoODR odr) {
+    uint8_t data = 0b01111000 & odr;
+    data |= 0b00000111 & mode;
+
+    Status status = write_reg(FIFO_CTRL5, data);
+    if (!status) return status;
+
+    m_fifo_ctrl = data;
+
+    return SUCCESS;
+}
+
+Status LSM6DS33::reset_fifo() const {
+    // Select Bypass mode
+    uint8_t data = 0b00000111 & FIFO_MODE_BYPASS;
+    data |= m_fifo_ctrl & 0b011110000;
+    Status status = write_reg(FIFO_CTRL5, data);
+    if (!status) return status;
+
+    // Select FIFO mode again
+    return write_reg(FIFO_CTRL5, m_fifo_ctrl);
 }
 
 Status LSM6DS33::read_new_data() {
@@ -122,6 +154,16 @@ Status LSM6DS33::read_new_data() {
         if (!status) return status;
         m_out_accel_z = data;
     }
+
+    return SUCCESS;
+}
+
+Status LSM6DS33::read_fifo() {
+    uint16_t data;
+
+    // Read FIFO_DATA_OUT registers
+    Status status = read_reg_16(FIFO_DATA_OUT_L, data);
+    if (!status) return status;
 
     return SUCCESS;
 }
