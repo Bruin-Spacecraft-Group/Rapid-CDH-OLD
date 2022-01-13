@@ -6,7 +6,7 @@ class ADS7828;
 class TMP36 {
 public:
     TMP36(ADS7828* sensor, int channel);
-    double getTemperature();
+    double getTemperature(int& err);
 private:
     double voltageAtZero;
     double voltagePerDegree;

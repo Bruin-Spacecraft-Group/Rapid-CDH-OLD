@@ -5,15 +5,13 @@
 
 class ADS7828 {
 public:
-	ADS7828(const char* device, bool addr0, bool addr1);
-	uint16_t readChannelCommonAnode(int channel);
-	uint16_t readChannelDifferentialPair(int pair, bool inverted);
-	uint16_t readChannelDifferentialPair(int pair);
-	void setRunning(bool running);
-	const char* getState();
+	ADS7828(const char* device, bool addr0, bool addr1, int& err);
+	uint16_t readChannelCommonAnode(int channel, int& err);
+	uint16_t readChannelDifferentialPair(int pair, bool inverted, int& err);
+	uint16_t readChannelDifferentialPair(int pair, int& err);
+	void setRunning(bool running, int& err);
 private:
 	uint8_t address;
-	const char* state;
 	uint8_t lastCmd;
 	int fd;
 }

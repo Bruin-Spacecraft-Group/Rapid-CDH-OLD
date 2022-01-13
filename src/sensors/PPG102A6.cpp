@@ -21,9 +21,9 @@ PPG102A6::PPG102A6(ADS7828* sensor, int channel, int gpioPin) {
 	digitalWrite(gpioPin, LOW);
 }
 
-double PPG102A6::getTemperature() {
+double PPG102A6::getTemperature(int& err) {
 	digitalWrite(gpioPin, HIGH);
-	double voltage = sensor->readChannelCommonAnode(channel);
+	double voltage = sensor->readChannelCommonAnode(channel, err);
 	digitalWrite(gpioPin, LOW);
 	// using V = IR
 	double current = voltage / dividerResistance;

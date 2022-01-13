@@ -4,29 +4,27 @@
 #include <wiringPi.h>
 #include <wiringPiI2C.h>
 
-// Begin Possible States
-const char NOT_INIT[] = "FAILED TO INITIALIZE DEVICE";
-const char WORKING[] = "TAKING SAMPLES";
-const char ASLEEP[] = "DEVICE TURNED OFF";
-const char ERROR[] = "ERROR EXECUTING LAST COMMAND";
-// End Possible States
-
 const MAX_READ_VALUE = (1 << 12) - 1;
 
-ADS7828::ADS7828(const char* device, bool addr1, bool addr2) {
+ADS7828::ADS7828(const char* device, bool addr1, bool addr2, int& err) {
 	address = 0b01001000 + 2 * addr1 + addr2;
 	fd = wiringPiI2CSetupInterface(device, address);
 	if (fd == -1) {
 		address = 255;
-		state = NOT_INIT;
+		err = -1; // I2C setup for this device failed
 	}
 	else {
-		state = WORKING;
+		err = 0;
 	}
 }
 
-uint16_t ADS7828::readChannelCommonAnode(int channel) {
-	if (channel >= 8 || channel < 0 || fd == -1) {
+uint16_t ADS7828::readChannelCommonAnode(int channel, int& err) {
+	if (channel >= 8 || channel < 0) {
+		err = -1; // Bad input: invalid channel
+		return 0xffff;
+	}
+	if (fd == -1) {
+		err = -1; // I2C setup for this device failed
 		return 0xffff;
 	}
 	uint8_t cmd = 56 * (channel & 1) + 8 * channel + 140;
@@ -34,23 +32,28 @@ uint16_t ADS7828::readChannelCommonAnode(int channel) {
 		int res = wiringPiI2CWrite(fd, cmd);
 		if (res < 0) {
 			lastCmd = 255;
-			state = ERROR;
+			err = -1; // I2C write failure to this device
 			return 0xffff;
 		}
 	}
 	int res = wiringPiI2CRead(fd);
 	if (res < 0 || res > MAX_READ_VALUE) {
-		state = ERROR;
+		err = -1; // I2C read failure to this device
 		return 0xffff;
 	}
-	state = WORKING;
+	err = 0;
 	return res;
 }
 
 // pair 0 is 0,1; pair 1 is 2,3; pair 2 is 4,5; pair 3 is 6,7
 // if the pair is inverted, the positive input is the larger channel number
-uint16_t ADS7828::readChannelDifferentialPair(int pair, bool inverted) {
-	if (pair >= 4 || pair < 0 || fd == -1) {
+uint16_t ADS7828::readChannelDifferentialPair(int pair, bool inverted, int& err) {
+	if (pair >= 4 || pair < 0) {
+		err = -1; // Bad input: invalid pair
+		return 0xffff;
+	}
+	if (fd == -1) {
+		err = -1; // I2C setup for this device failed
 		return 0xffff;
 	}
 	uint8_t cmd = 12 + inverted * 64 + pair * 16;
@@ -58,39 +61,38 @@ uint16_t ADS7828::readChannelDifferentialPair(int pair, bool inverted) {
 		int res = wiringPiI2CWrite(fd, cmd);
 		if (res < 0) {
 			lastCmd = 255;
-			state = ERROR;
+			err = -1; // I2C write failure to this device
 			return 0xffff;
 		}
 	}
 	int res = wiringPiI2CRead(fd);
 	if (res < 0 || res > MAX_READ_VALUE) {
-		state = ERROR;
+		err = -1; // I2C read failure to this device
 		return 0xffff;
 	}
-	state = WORKING;
+	err = 0;
 	return res;
 }
 
-uint16_t ADS7828::readChannelDifferentialPair(int pair) {
-	return readChannelDifferentialPair(pair, false);
+uint16_t ADS7828::readChannelDifferentialPair(int pair, int& err) {
+	return readChannelDifferentialPair(pair, false, err);
 }
 
-void ADS7828::setRunning(bool running) {
-	if (fd == -1) return;
+void ADS7828::setRunning(bool running, int& err) {
+	if (fd == -1) {
+		err = -1; // I2C setup for this device failed
+		return;
+	}
 	uint8_t cmd = lastCmd & 0xf0 + running * 0xc;
 	if (cmd != lastCmd) {
 		int res = wiringPiI2CWrite(fd, cmd);
 		if (res < 0) {
 			lastCmd = 255;
-			state = ERROR;
+			err = -1; // I2C write failure to this device
 		}
 		else {
 			lastCmd = cmd;
-			state = running ? WORKING : ASLEEP;
+			err = 0;
 		}
 	}
-}
-
-const char* ADS7828::getState() {
-	return state;
 }
