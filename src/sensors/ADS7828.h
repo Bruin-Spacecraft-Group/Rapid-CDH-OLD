@@ -5,7 +5,7 @@
 
 class ADS7828 {
 public:
-	ADS7828(bool addr0, bool addr1);
+	ADS7828(const char* device, bool addr0, bool addr1);
 	uint16_t readChannelCommonAnode(int channel);
 	uint16_t readChannelDifferentialPair(int pair, bool inverted);
 	uint16_t readChannelDifferentialPair(int pair);

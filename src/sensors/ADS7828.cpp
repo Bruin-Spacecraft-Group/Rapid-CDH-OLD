@@ -13,9 +13,9 @@ const char ERROR[] = "ERROR EXECUTING LAST COMMAND";
 
 const MAX_READ_VALUE = (1 << 12) - 1;
 
-ADS7828::ADS7828(bool addr1, bool addr2) {
+ADS7828::ADS7828(const char* device, bool addr1, bool addr2) {
 	address = 0b01001000 + 2 * addr1 + addr2;
-	fd = wiringPiI2CSetup(address);
+	fd = wiringPiI2CSetupInterface(device, address);
 	if (fd == -1) {
 		address = 255;
 		state = NOT_INIT;
