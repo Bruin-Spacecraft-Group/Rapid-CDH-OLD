@@ -5,12 +5,15 @@ class ina260;
 
 class PPG102A6 {
     public:
-        PPG102A6(ina260* sensor);
+        PPG102A6(ADS7828* sensor, int channel, int gpioPin);
         double getTemperature();
     private:
         double resistanceAtZero;
         double ppmPerDegree;
-        ina260* sensor;
+        ADS7828* sensor;
+        double dividerResistance;
+        int channel;
+        int gpioPin;
 };
 
 #endif
