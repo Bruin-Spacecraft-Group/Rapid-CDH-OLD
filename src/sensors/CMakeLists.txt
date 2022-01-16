@@ -4,4 +4,10 @@ target_sources(sensorsLib
         ina260.h
         UCamIII.cpp
         UCamIII.h
+        ADS7828.cpp
+        ADS7828.h
+        PPG102A6.cpp
+        PPG102A6.h
+        TMP36.cpp
+        TMP36.h
 )
