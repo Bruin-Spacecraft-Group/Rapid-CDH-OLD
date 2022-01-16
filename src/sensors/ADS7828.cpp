@@ -8,27 +8,14 @@
 
 const MAX_READ_VALUE = (1 << 12) - 1;
 
-ADS7828::ADS7828(const char* device, bool addr1, bool addr2, Status& err) {
-	address = 0b01001000 + 2 * addr1 + addr2;
+ADS7828::ADS7828(const char* device, bool addr1, bool addr2, double referenceVoltage) {
+	uint8_t address = 0b01001000 + 2 * addr1 + addr2;
 	fd = wiringPiI2CSetupInterface(device, address);
-	if (fd == -1) {
-		address = 255;
-		err = I2C_SETUP_FAILURE;
-	}
-	else {
-		err = SUCCESS;
-	}
-	this->referenceVoltage = 2.5;
+	this->referenceVoltage = referenceVoltage;
 }
 
-ADS7828::ADS7828(const char* device, bool addr1, bool addr2, double referenceVoltage, Status& err) {
-	address = 0b01001000 + 2 * addr1 + addr2;
-	fd = wiringPiI2CSetupInterface(device, address);
-	if (fd == -1) {
-		address = 255;
-		err = I2C_SETUP_FAILURE;
-	}
-	this->referenceVoltage = referenceVoltage;
+Status ADS7828::init() {
+	return fd == -1 ? I2C_SETUP_FAILURE : SUCCESS;
 }
 
 Status ADS7828::readChannelCommonAnode(int channel, double& value) {
