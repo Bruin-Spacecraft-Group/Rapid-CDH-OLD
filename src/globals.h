@@ -13,9 +13,13 @@ namespace constants {
 }
 
 // Error codes
-enum Status {
+enum [[nodiscard]] Status {
     SUCCESS,
     FAILURE,
+    I2C_SETUP_FAILURE,
+    I2C_WRITE_FAILURE,
+    I2C_READ_FAILURE,
+    INVALID_INPUT,
 };
 
 #endif
