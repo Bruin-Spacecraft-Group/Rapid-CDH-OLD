@@ -1,7 +1,7 @@
 target_sources(sensorsLib
     PRIVATE
-        ina260.cpp
-        ina260.h
+        INA260.cpp
+        INA260.h
         UCamIII.cpp
         UCamIII.h
 )
