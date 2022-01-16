@@ -9,7 +9,12 @@ TMP36::TMP36(ADS7828* sensor, int channel) {
 	this->channel = channel;
 }
 
-double TMP36::getTemperature(int& err) {
+Status TMP36::getTemperature(double& value) {
 	// using V = vAtZero + T * vPerDeg
-	return (sensor->readChannelCommonAnode(channel, err)) * 1000 - voltageAtZero) / voltagePerDegree;
+	double voltage;
+	Status s = sensor->readChannelCommonAnode(channel, value));
+	if (s == SUCCESS) {
+		value = (voltage * 1000 - voltageAtZero) / voltagePerDegree;
+	}
+	return s;
 }

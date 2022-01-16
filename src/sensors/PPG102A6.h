@@ -8,12 +8,13 @@ class PPG102A6 {
         PPG102A6(ADS7828* sensor, int channel, int gpioPin);
         // note that there are no error codes related to the gpio pin because
         // gpio failures are silent in the wiringpi library
-        double getTemperature(int& err);
+        [[nodiscard]] Status getTemperature(double& value);
     private:
         double resistanceAtZero;
         double ppmPerDegree;
         ADS7828* sensor;
         double dividerResistance;
+        double topVoltage;
         int channel;
         int gpioPin;
 };
