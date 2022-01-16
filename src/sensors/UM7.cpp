@@ -12,4 +12,3 @@ Status UM7::init() {
 
     return SUCCESS;
 }
-
