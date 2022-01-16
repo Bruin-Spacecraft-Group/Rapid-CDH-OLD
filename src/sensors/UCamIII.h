@@ -6,35 +6,48 @@
 #include <string>
 #include <cstdint>
 
+#include "../globals.h"
+
 class UCamIII {
 public:
+    // Enum forward declarations
+    enum CmdID       : uint8_t;
+    enum ImgFormat   : uint8_t;
+    enum Resolution  : uint8_t;
+    enum PictureType : uint8_t;
+    enum SnapshotType: uint8_t;
+    enum ResetType   : uint8_t;
+    enum Error       : uint8_t;
+    enum LightFreq   : uint8_t;
+    enum Tone        : uint8_t;
+
     UCamIII(const char* serial_dev, uint32_t baud_rate, uint8_t rst_pin,
             uint8_t img_format, uint8_t resolution, std::ofstream& fout);
     ~UCamIII();
 
-    void init();
-    void sync() const;
+    [[nodiscard]] Status init();
+    [[nodiscard]] Status sync() const;
     void hard_reset() const;
-    void soft_reset(uint8_t rst_type, bool immediate = false) const;
+    [[nodiscard]] Status soft_reset(ResetType rst_type, bool immediate = false) const;
 
-    void send_cmd_unchecked(uint8_t cmd, uint8_t param1 = 0x00, uint8_t param2 = 0x00, uint8_t param3 = 0x00, uint8_t param4 = 0x00) const;
-    void send_cmd(uint8_t cmd, uint8_t param1 = 0x00, uint8_t param2 = 0x00, uint8_t param3 = 0x00, uint8_t param4 = 0x00) const;
-    void receive_cmd(uint8_t* data, uint8_t len = NUM_CMD_BYTES, uint16_t timeout = 500) const;
+    void send_cmd_unchecked(CmdID cmd, uint8_t param1 = 0x00, uint8_t param2 = 0x00, uint8_t param3 = 0x00, uint8_t param4 = 0x00) const;
+    [[nodiscard]] Status send_cmd(CmdID cmd, uint8_t param1 = 0x00, uint8_t param2 = 0x00, uint8_t param3 = 0x00, uint8_t param4 = 0x00) const;
+    [[nodiscard]] Status receive_cmd(uint8_t* data, uint8_t len = NUM_CMD_BYTES, uint16_t timeout = 500) const;
 
-    void initial(uint8_t img_format, uint8_t resolution);
-    void set_package_size(uint32_t size);
-    void set_baud_rate(uint32_t baud_rate);
-    void set_light_freq(uint8_t light_freq);
-    void set_tone(uint8_t contrast, uint8_t brightness, uint8_t exposure);
+    [[nodiscard]] Status initial(ImgFormat img_format, Resolution resolution);
+    [[nodiscard]] Status set_package_size(uint32_t size);
+    [[nodiscard]] Status set_baud_rate(uint32_t baud_rate);
+    void set_light_freq(LightFreq light_freq);
+    void set_tone(Tone contrast, Tone brightness, Tone exposure);
     void set_sleep_timeout(uint8_t timeout);
 
-    void snapshot(uint8_t snapshot_type, uint16_t skipped_frames = 0) const;
-    [[nodiscard]] uint32_t get_picture(uint8_t picture_type) const;
-    void write_jpeg_data(uint32_t len) const;
+    [[nodiscard]] Status snapshot(SnapshotType snapshot_type, uint16_t skipped_frames = 0) const;
+    [[nodiscard]] Status get_picture(PictureType picture_type, uint32_t& len) const;
+    [[nodiscard]] Status write_jpeg_data(uint32_t len) const;
     void write_raw_data(uint32_t len) const;
 
     // Enums
-    enum CmdID {
+    enum CmdID: uint8_t {
         CMD_INITIAL          = 0x01,
         CMD_GET_PICTURE      = 0x04,
         CMD_SNAPSHOT         = 0x05,
@@ -50,43 +63,40 @@ public:
         CMD_SLEEP            = 0x15
     };
 
-    enum ImgFormat {
+    enum ImgFormat: uint8_t {
         FMT_RAW_GRAY_8    = 0x03, // 8-bit Gray Scale (RAW, 8-bit for Y only)
         FMT_RAW_CRYCBY_16 = 0x08, // 16-bit Colour (RAW, CrYCbY)
         FMT_RAW_RGB_16    = 0x06, // 16-bit Colour (RAW, 565(RGB))
         FMT_JPEG          = 0x07
     };
 
-    enum RawRes {
-        RAW_60x80   = 0x01,
-        RAW_160x120 = 0x03,
-        RAW_128x128 = 0x09,
-        RAW_128x96  = 0x0B
-    };
-
-    enum JPEGRes {
+    enum Resolution: uint8_t {
+        RAW_60x80    = 0x01,
+        RAW_160x120  = 0x03,
+        RAW_128x128  = 0x09,
+        RAW_128x96   = 0x0B,
         JPEG_160x128 = 0x03,
         JPEG_320x240 = 0x05,
         JPEG_640x480 = 0x07
     };
 
-    enum PictureType {
+    enum PictureType: uint8_t {
         PIC_SNAPSHOT = 0x01,
         PIC_RAW      = 0x02,
         PIC_JPEG     = 0x05
     };
 
-    enum SnapshotType {
+    enum SnapshotType: uint8_t {
         SNAP_JPEG, // Compressed
         SNAP_RAW   // Uncompressed
     };
 
-    enum ResetType {
+    enum ResetType: uint8_t {
         RST_FULL,            // Resets the whole system. The uCAM-III will reboot and soft_reset all registers and state machines.
         RST_STATE_MACHINES  // Resets the state machines only
     };
 
-    enum Error {
+    enum Error: uint8_t {
         ERR_NONE,
         ERR_PICTURE_TYPE,
         ERR_PICTURE_UP_SCALE,
@@ -110,13 +120,13 @@ public:
         ERR_SEND_COMMAND
     };
 
-    enum LightFreq { // Hz
+    enum LightFreq: uint8_t { // Hz
         FREQ_50,
         FREQ_60
     };
 
     // For brightness, contrast, exposure
-    enum Tone {
+    enum Tone: uint8_t {
         TONE_MIN,    // Exposure: -2
         TONE_LOW,    // Exposure: -1
         TONE_NORMAL, // Default. Exposure: 0
@@ -152,8 +162,8 @@ private:
     };
 
     static void print_cmd(uint8_t * cmd, uint8_t len = NUM_CMD_BYTES);
-    static std::string parse_nak_err(uint8_t nak_err);
-    static std::string cmd_to_str(uint16_t cmd);
+    static std::string parse_nak_err(Error nak_err);
+    static std::string cmd_to_str(CmdID cmd);
 };
 
 #endif //RAPIDCDH_UCAM_III_H
