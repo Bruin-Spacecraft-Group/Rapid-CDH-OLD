@@ -1,7 +1,9 @@
-#ifndef ADS7828
-#define ADS7828
+#ifndef RAPID_CDH_ADS7828_H
+#define RAPID_CDH_ADS7828_H
 
 #include <cstdint>
+
+#include "../globals.h"
 
 class ADS7828 {
 public:
@@ -15,6 +17,6 @@ private:
 	double referenceVoltage;
 	uint8_t lastCmd;
 	int fd;
-}
+};
 
 #endif

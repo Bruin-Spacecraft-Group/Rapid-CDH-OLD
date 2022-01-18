@@ -1,6 +1,7 @@
 #include "TMP36.h"
 
 #include "ADS7828.h"
+#include "../globals.h"
 
 TMP36::TMP36(ADS7828* sensor, int channel) {
 	voltageAtZero = 0.5;
@@ -11,10 +12,10 @@ TMP36::TMP36(ADS7828* sensor, int channel) {
 
 Status TMP36::getTemperature(double& value) {
 	// using V = vAtZero + T * vPerDeg
-	double voltage;
-	Status s = sensor->readChannelCommonAnode(channel, value));
+	double voltage = 1;
+	Status s = sensor->readChannelCommonAnode(channel, value);
 	if (s == SUCCESS) {
-		value = (voltage * 1000 - voltageAtZero) / voltagePerDegree;
+		value = (voltage - voltageAtZero) / voltagePerDegree;
 	}
 	return s;
 }

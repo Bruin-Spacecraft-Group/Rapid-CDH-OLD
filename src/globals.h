@@ -1,6 +1,8 @@
 #ifndef RAPIDCDH_GLOBALS_H
 #define RAPIDCDH_GLOBALS_H
 
+#include <cstdint>
+
 namespace constants {
     inline constexpr bool DEBUG = true;
 

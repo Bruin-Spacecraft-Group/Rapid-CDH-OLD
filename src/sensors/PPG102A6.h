@@ -1,7 +1,9 @@
-#ifndef PPG102A6
-#define PPG102A6
+#ifndef RAPID_CDH_PPG102A6_H
+#define RAPID_CDH_PPG102A6_H
 
-class ina260;
+#include "../globals.h"
+
+class ADS7828;
 
 class PPG102A6 {
     public:

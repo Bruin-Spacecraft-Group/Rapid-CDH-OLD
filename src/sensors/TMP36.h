@@ -1,5 +1,7 @@
-#ifndef TMP36
-#define TMP36
+#ifndef RAPID_CDH_TMP36_H
+#define RAPID_CDH_TMP36_H
+
+#include "../globals.h"
 
 class ADS7828;
 

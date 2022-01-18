@@ -6,7 +6,7 @@
 
 #include "../globals.h"
 
-const MAX_READ_VALUE = (1 << 12) - 1;
+const int MAX_READ_VALUE = (1 << 12) - 1;
 
 ADS7828::ADS7828(const char* device, bool addr1, bool addr2, double referenceVoltage) {
 	uint8_t address = 0b01001000 + 2 * addr1 + addr2;
@@ -62,19 +62,15 @@ Status ADS7828::readChannelDifferentialPair(int pair, bool inverted, double& val
 	if (res < 0 || res > MAX_READ_VALUE) {
 		return I2C_READ_FAILURE;
 	}
-	value = res * referenceVoltage / (1 << 12)
+	value = res * referenceVoltage / (1 << 12);
 	return SUCCESS;
-}
-
-double ADS7828::readChannelDifferentialPair(int pair, double& value) {
-	return readChannelDifferentialPair(pair, false, value);
 }
 
 Status ADS7828::setRunning(bool running) {
 	if (fd == -1) {
 		return I2C_SETUP_FAILURE;
 	}
-	uint8_t cmd = lastCmd & 0xf0 + running * 0xc;
+	uint8_t cmd = (lastCmd & 0xf0) + (running * 0xc);
 	if (cmd != lastCmd) {
 		int res = wiringPiI2CWrite(fd, cmd);
 		if (res < 0) {
@@ -85,5 +81,7 @@ Status ADS7828::setRunning(bool running) {
 			lastCmd = cmd;
 			return SUCCESS;
 		}
-	}
+	} else {
+        return SUCCESS;
+    }
 }

@@ -2,6 +2,9 @@
 
 #include <wiringPi.h>
 
+#include "../globals.h"
+#include "ADS7828.h"
+
 PPG102A6::PPG102A6(ADS7828* sensor, int channel, int gpioPin) {
 	resistanceAtZero = 1000;
 	ppmPerDegree = 3850;
