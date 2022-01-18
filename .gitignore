@@ -40,4 +40,5 @@ build/
 *.tar.gz
 .idea/
 .vs/
+.vscode/
 img_data/
