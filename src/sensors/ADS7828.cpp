@@ -1,6 +1,6 @@
 #include "ADS7828.h"
 
-#include <cmath>
+#include <cstdint>
 #include <wiringPi.h>
 #include <wiringPiI2C.h>
 

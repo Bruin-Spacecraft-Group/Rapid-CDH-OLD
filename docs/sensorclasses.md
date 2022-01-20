@@ -1,0 +1,4 @@
+ - If a I2C write that changes settings fails, no assumptions are made about the final state of the device, and operations that rely on this state will terminate.
+ - After a settings-changing method fails, it is not guaranteed that any method other than the said can be called (per reliance networks). However, the same method _is_ guaranteed to be callable.
+ - If a device is off and the user attempts to use it for something that requires it to be on, the behavior is undefined.
+ - If a constructor can fail with a status code, it will return it via the `init()` method. If a constructor cannot fail, it will have no `init()` method.
