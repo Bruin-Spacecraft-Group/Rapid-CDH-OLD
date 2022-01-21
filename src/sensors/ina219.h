@@ -1,9 +1,11 @@
 #ifndef RAPID_CDH_INA219_H
 #define RAPID_CDH_INA219_H
 
+#include <cstdint>
+
 #include "../globals.h"
 
-class Ina219 {
+class INA219 {
 public:
     enum AddrSelect {
         GND = 0,
@@ -13,34 +15,49 @@ public:
     };
 
     enum ShuntVoltageRangeSetting {
-        PlusMinus_320_mV,
-        PlusMinus_160_mV,
-        PlusMinus_80_mV,
-        PlusMinus_40_mV
+        PlusMinus_40_mV = 0,
+        PlusMinus_80_mV = 1,
+        PlusMinus_160_mV = 2,
+        PlusMinus_320_mV = 3
     };
 
     // if the parameter for oversampling is n, the amount of oversampling done by the ADC is 2^n (e.g, n = 2 means 4 samples are averaged)
     // bus voltage full range is 32V, alternative is 16V
-    Ina219(
+    INA219(
         const char* device, AddrSelect addr0, AddrSelect addr1, double shuntResistance,
         ShuntVoltageRangeSetting v = PlusMinus_40_mV, int oversampling = 0, bool busVoltageFullRange = true);
-    Status init();
+    [[nodiscard]] Status init();
 
-    Status getShuntVoltage_mV(double& value);
+    [[nodiscard]] Status getShuntVoltage_mV(double& value);
     // supply voltage BEFORE the sensing resistor; exceeds the value observed by the component over which current is measured
-    Status getSupplyVoltage_mV(double& value);
+    [[nodiscard]] Status getSupplyVoltage_mV(double& value);
     // supply voltage AFTER the sensing resistor; less than the battery / supply voltage
-    Status getBusVoltage_mV(double& value);
+    [[nodiscard]] Status getBusVoltage_mV(double& value);
 
-    Status getCurrent_mA(double& value);
-    Status getPower_mW(double& value);
+    [[nodiscard]] Status getCurrent_mA(double& value);
+    [[nodiscard]] Status getPower_mW(double& value);
 
-    Status modifyShunt(double newShuntResistance);
-    Status reconfigure(ShuntVoltageRangeSetting v, int oversampling, bool busVoltageFullRange);
-    Status setRunning(bool running);
+    [[nodiscard]] Status modifyShunt(double newShuntResistance);
+    [[nodiscard]] Status reconfigure(ShuntVoltageRangeSetting v, int oversampling, bool busVoltageFullRange);
+    [[nodiscard]] Status setRunning(bool running);
 
     // causes loss of any configuration or calibration settings
-    Status resetDevice();
+    [[nodiscard]] Status resetDevice();
+
+private:
+    int fd;
+    Status ctrRes;
+
+    int lastConfigInt;
+    ShuntVoltageRangeSetting voltageRangeSetting;
+    int oversampling;
+    bool busVoltageFullRange;
+    int running; // 0 = false, 1 = true, -1 = unknown due to error
+
+    int lastCalibInt;
+    double shuntResistance;
+    double currentLSB;
+    double powerLSB;
 };
 
 #endif
