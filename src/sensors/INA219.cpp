@@ -148,7 +148,25 @@ Status INA219::getCurrent_mA(double& value) {
     return SUCCESS;
 }
 
-Status INA219::getPower_mW(double& value) {
+Status INA219::getSupplyPower_mW(double& value) {
+    if (fd == -1) {
+        return I2C_SETUP_FAILURE;
+    }
+    double voltage = 0;
+    double current = 0;
+    Status s1 = getSupplyVoltage_mV(voltage);
+    Status s2 = getCurrent_mA(current);
+    if (s2 == I2C_PRIOR_WRITE_FAILURE) {
+        return I2C_PRIOR_WRITE_FAILURE;
+    }
+    if (s1 == I2C_READ_FAILURE || s2 == I2C_READ_FAILURE) {
+        return I2C_READ_FAILURE;
+    }
+    value = voltage * current / 1000;
+    return SUCCESS;
+}
+
+Status INA219::getBusPower_mW(double& value) {
     if (fd == -1) {
         return I2C_SETUP_FAILURE;
     }

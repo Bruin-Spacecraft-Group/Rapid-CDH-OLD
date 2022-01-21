@@ -35,7 +35,8 @@ public:
     [[nodiscard]] Status getBusVoltage_mV(double& value);
 
     [[nodiscard]] Status getCurrent_mA(double& value);
-    [[nodiscard]] Status getPower_mW(double& value);
+    [[nodiscard]] Status getSupplyPower_mW(double& value);
+    [[nodiscard]] Status getBusPower_mW(double& value);
 
     [[nodiscard]] Status modifyShunt(double newShuntResistance);
     [[nodiscard]] Status reconfigure(ShuntVoltageRangeSetting v, int oversampling, bool busVoltageFullRange);
