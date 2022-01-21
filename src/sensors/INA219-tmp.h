@@ -42,7 +42,7 @@ public:
     [[nodiscard]] Status setRunning(bool running);
 
     // causes loss of any configuration or calibration settings
-    [[nodiscard]] Status resetDevice();
+    [[nodiscaed]] Status resetDevice();
 
 private:
     int fd;
