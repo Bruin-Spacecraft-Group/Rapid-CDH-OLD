@@ -7,9 +7,23 @@
 
 class UM7 {
 public:
-    UM7(uint8_t channel, uint32_t speed);
+    enum RegAddr: uint8_t;
+
+    UM7(uint32_t speed);
 
     [[nodiscard]] Status init();
+
+    // Writes first 4 bytes of data to register
+    // Least-significant byte at data[0]
+    [[nodiscard]] Status write_reg(RegAddr reg, const uint8_t *data) const;
+
+    // Reads contents of register into first 4 bytes of data
+    // Least-significant byte at data[0]
+    [[nodiscard]] Status read_reg(RegAddr reg, uint8_t *data) const;
+
+    // Sends command by writing to a command register
+    // If getting firmware revision (cmd = 0xAA), 4 bytes are written to data
+    [[nodiscard]] Status send_cmd(RegAddr cmd_reg, uint8_t *data = nullptr) const;
 
     enum RegAddr: uint8_t {
         // Config registers
@@ -118,13 +132,16 @@ public:
         SET_HOME_POSITION        = 0xAE, // Sets the current GPS location as position (0,0)
         SET_MAG_REFERENCE        = 0xB0, // Sets the magnetometer reference vector
         CALIBRATE_ACCELEROMETERS = 0xB1, // Calibrates the accelerometer biases
-        RESET_EKF                = 0xB3 // Resets the EKF
+        RESET_EKF                = 0xB3  // Resets the EKF
     };
 
 private:
     uint8_t m_channel;
     uint32_t m_speed;
     int32_t m_spi;
+
+    static constexpr uint8_t CHANNEL = 1; // Chip select (0 or 1)
+    static constexpr uint8_t OP_LEN  = 6; // Number of bytes per SPI operation
 };
 
 #endif //RAPIDCDH_UM7_H
