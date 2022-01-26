@@ -38,7 +38,7 @@ int calibInt(double shuntResistance, INA219::ShuntVoltageRangeSetting vsetting, 
     double maxCurrent = maxV / shuntResistance;
     Ilsb = maxCurrent / (1 << 15);
     Plsb = 20 * Ilsb;
-    return 0.04096 / (Ilsb * shuntResistance);
+    return static_cast<int>(0.04096 / (Ilsb * shuntResistance));
 }
 
 INA219::INA219(
@@ -56,9 +56,9 @@ INA219::INA219(
         return;
     }
     lastConfigInt = configInt(v, oversampling, busVoltageFullRange, true);
-    int confStatus = wiringPiI2CWriteReg16(fd, 0, lastConfigInt);
+    int confStatus = wiringPiI2CWriteReg16(fd, CONFIGURATION, lastConfigInt);
     lastCalibInt = calibInt(shuntResistance, v, currentLSB, powerLSB);
-    int calStatus = wiringPiI2CWriteReg16(fd, 5, lastCalibInt);
+    int calStatus = wiringPiI2CWriteReg16(fd, CALIBRATION, lastCalibInt);
     if (confStatus < 0 || calStatus < 0) {
         if (calStatus < 0) {
             lastCalibInt = -1;
@@ -81,18 +81,28 @@ Status INA219::getShuntVoltage_mV(double& value) {
     if (fd == -1) {
         return I2C_SETUP_FAILURE;
     }
-    int res = wiringPiI2CReadReg16(fd, 1);
+    int res = wiringPiI2CReadReg16(fd, SHUNT_VOLTAGE);
     if (res < 0) {
         return I2C_READ_FAILURE;
     }
-    if (res & (1 << 15)) {
-        uint16_t compabs = (res - 1);
-        uint16_t abs = ~compabs;
-        value = -abs / 100.0;
-    } else {
-        value = res / 100.0;
-    }
+    value = *((int16_t*) &res) / 100.0; // data processing casts
     return SUCCESS;
+}
+
+Status INA219::getShuntVoltageRaw(uint16_t& value) {
+    if (fd == -1) {
+        return I2C_SETUP_FAILURE;
+    }
+    int res = wiringPiI2CReadReg16(fd, SHUNT_VOLTAGE);
+    if (res < 0) {
+        return I2C_READ_FAILURE;
+    }
+    value = static_cast<uint16_t>(res); // overflow not possible, value obtained from function that reads from a two-byte register
+    return SUCCESS;
+}
+
+double INA219::parseShuntVoltage_mV(uint16_t raw) {
+    return *((int16_t*) &raw) / 100.0; // data processing casts
 }
 
 Status INA219::getSupplyVoltage_mV(double& value) {
@@ -114,18 +124,32 @@ Status INA219::getBusVoltage_mV(double& value) {
     if (fd == -1) {
         return I2C_SETUP_FAILURE;
     }
-    int res = wiringPiI2CReadReg16(fd, 2);
+    int res = wiringPiI2CReadReg16(fd, BUS_VOLTAGE);
     if (res < 0) {
         return I2C_READ_FAILURE;
     }
-    uint16_t raw = res;
-    raw >>= 3;
-    value = 4.0 * raw;
+    value = 4.0 * (res >> 3);
     return SUCCESS;
 }
 
+Status INA219::getBusVoltageRaw(uint16_t& value) {
+    if (fd == -1) {
+        return I2C_SETUP_FAILURE;
+    }
+    int res = wiringPiI2CReadReg16(fd, BUS_VOLTAGE);
+    if (res < 0) {
+        return I2C_READ_FAILURE;
+    }
+    value = static_cast<uint16_t>(res); // overflow not possible, value obtained from function that reads from a two-byte register
+    return SUCCESS;
+}
+
+double INA219::parseBusVoltage_mV(uint16_t raw) {
+    return 4.0 * (raw >> 3);
+}
+
 Status validateData(int fd) {
-    int res = wiringPiI2CReadReg16(fd, 2);
+    int res = wiringPiI2CReadReg16(fd, INA219::BUS_VOLTAGE);
     return res < 0 ? I2C_READ_FAILURE : res & 1 ? I2C_BAD_DATA : SUCCESS;
 }
 
@@ -136,7 +160,7 @@ Status INA219::getCurrent_mA(double& value) {
     if (currentLSB < 0) {
         return I2C_PRIOR_WRITE_FAILURE;
     }
-    int res = wiringPiI2CReadReg16(fd, 4);
+    int res = wiringPiI2CReadReg16(fd, CURRENT);
     if (res < 0) {
         return I2C_READ_FAILURE;
     }
@@ -144,8 +168,31 @@ Status INA219::getCurrent_mA(double& value) {
     if (valid != SUCCESS) {
         return valid;
     }
-    value = *((int16_t*) &res) * currentLSB;
+    value = *((int16_t*) &res) * currentLSB; // data processing casts
     return SUCCESS;
+}
+
+Status INA219::getCurrentRaw(uint16_t& value) {
+    if (fd == -1) {
+        return I2C_SETUP_FAILURE;
+    }
+    if (currentLSB < 0) {
+        return I2C_PRIOR_WRITE_FAILURE;
+    }
+    int res = wiringPiI2CReadReg16(fd, CURRENT);
+    if (res < 0) {
+        return I2C_READ_FAILURE;
+    }
+    Status valid = validateData(fd);
+    if (valid != SUCCESS) {
+        return valid;
+    }
+    value = static_cast<uint16_t>(res); // overflow not possible, value obtained from function that reads from a two-byte register
+    return SUCCESS;
+}
+
+double INA219::parseCurrent_mA(uint16_t raw) {
+    return *((int16_t*) &raw) * currentLSB; // data processing casts
 }
 
 Status INA219::getSupplyPower_mW(double& value) {
@@ -173,7 +220,7 @@ Status INA219::getBusPower_mW(double& value) {
     if (powerLSB < 0) {
         return I2C_PRIOR_WRITE_FAILURE;
     }
-    int res = wiringPiI2CReadReg16(fd, 3);
+    int res = wiringPiI2CReadReg16(fd, POWER);
     if (res < 0) {
         return I2C_READ_FAILURE;
     }
@@ -183,6 +230,29 @@ Status INA219::getBusPower_mW(double& value) {
     }
     value = res * powerLSB;
     return SUCCESS;
+}
+
+Status INA219::getBusPowerRaw(uint16_t& value) {
+    if (fd == -1) {
+        return I2C_SETUP_FAILURE;
+    }
+    if (powerLSB < 0) {
+        return I2C_PRIOR_WRITE_FAILURE;
+    }
+    int res = wiringPiI2CReadReg16(fd, POWER);
+    if (res < 0) {
+        return I2C_READ_FAILURE;
+    }
+    Status valid = validateData(fd);
+    if (valid != SUCCESS) {
+        return valid;
+    }
+    value = static_cast<uint16_t>(res); // overflow not possible, value obtained from function that reads from a two-byte register
+    return SUCCESS;
+}
+
+double INA219::parseBusPower_mW(uint16_t raw) {
+    return raw * powerLSB;
 }
 
 Status INA219::modifyShunt(double newShuntResistance) {
@@ -196,7 +266,7 @@ Status INA219::modifyShunt(double newShuntResistance) {
     if (i == lastCalibInt) {
         return SUCCESS;
     }
-    int calStatus = wiringPiI2CWriteReg16(fd, 5, i);
+    int calStatus = wiringPiI2CWriteReg16(fd, CALIBRATION, i);
     if (calStatus < 0) {
         lastCalibInt = -1;
         currentLSB = -1;
@@ -219,7 +289,7 @@ Status INA219::reconfigure(ShuntVoltageRangeSetting v, int oversampling, bool bu
     if (i == lastConfigInt) {
         return SUCCESS;
     }
-    int confStatus = wiringPiI2CWriteReg16(fd, 0, i);
+    int confStatus = wiringPiI2CWriteReg16(fd, CONFIGURATION, i);
     if (confStatus < 0) {
         lastConfigInt = -1;
         return I2C_WRITE_FAILURE;
@@ -243,7 +313,7 @@ Status INA219::setRunning(bool running) {
     if (lastConfigInt < 0) {
         return I2C_PRIOR_WRITE_FAILURE;
     }
-    int confStatus = wiringPiI2CWriteReg16(fd, 0, i);
+    int confStatus = wiringPiI2CWriteReg16(fd, CONFIGURATION, i);
     if (confStatus < 0) {
         lastConfigInt = -1;
         return I2C_WRITE_FAILURE;
@@ -257,7 +327,7 @@ Status INA219::resetDevice() {
     if (fd == -1) {
         return I2C_SETUP_FAILURE;
     }
-    int confStatus = wiringPiI2CWriteReg16(fd, 0, 1 << 15);
+    int confStatus = wiringPiI2CWriteReg16(fd, CONFIGURATION, 1 << 15);
     if (confStatus < 0) {
         lastConfigInt = -1;
         lastCalibInt = -1;
