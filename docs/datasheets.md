@@ -7,5 +7,8 @@
     - [uCAM-III](https://4dsystems.com.au/mwdownloads/download/link/id/420/) (Camera)
 - EPS
     - [Adafruit INA260](https://cdn-learn.adafruit.com/downloads/pdf/adafruit-ina260-current-voltage-power-sensor-breakout.pdf) (Current/Voltage sensor)
+    - [ADS7828](https://www.ti.com/lit/ds/symlink/ads7828.pdf?HQS=dis-mous-null-mousermode-dsf-pf-null-wwe&ts=1641775465019)
+    - [INA219](https://www.ti.com/lit/ds/symlink/ina219.pdf)
 - Thermal
     - [PPG102A6](https://www.mouser.com/datasheet/2/240/Littelfuse_Leaded_RTDs_Thin_Film_Platinum_RTD_Sens-1372451.pdf)
+    - [TMP36](https://www.analog.com/en/products/tmp36.html?doc=TMP35_36_37.pdf)

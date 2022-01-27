@@ -21,6 +21,8 @@ enum [[nodiscard]] Status {
     I2C_SETUP_FAILURE,
     I2C_WRITE_FAILURE,
     I2C_READ_FAILURE,
+    I2C_PRIOR_WRITE_FAILURE, // operation relies on the result from a prior write operation, which failed
+    I2C_BAD_DATA,
     INVALID_INPUT,
 };
 

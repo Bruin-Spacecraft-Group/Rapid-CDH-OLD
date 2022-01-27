@@ -10,4 +10,6 @@ target_sources(sensorsLib
         PPG102A6.h
         TMP36.cpp
         TMP36.h
+        INA219.cpp
+        INA219.h
 )
