@@ -12,12 +12,12 @@ include_directories(${WIRINGPI_INCLUDE_DIRS})
 
 add_executable(RapidCDH main.cpp)
 
-add_library(sensorsLib "")
+add_library(sensors "")
 
 add_subdirectory(sensors)
 
 target_link_libraries(RapidCDH
     PUBLIC
         ${WIRINGPI_LIBRARIES}
-        sensorsLib
+        sensors
 )
