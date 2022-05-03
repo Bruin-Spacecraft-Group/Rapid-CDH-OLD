@@ -1,17 +1,17 @@
-target_sources(sensorsLib
+target_sources(sensors
     PRIVATE
         ADS7828.cpp
         ADS7828.h
-        INA219.cpp
-        INA219.h
-        ina260.cpp
-        ina260.h
         PPG102A6.cpp
         PPG102A6.h
-        TMP36.cpp
-        TMP36.h
         UCamIII.cpp
         UCamIII.h
-        UM7.cpp
-        UM7.h
+        # INA219.cpp
+        # INA219.h
+        # ina260.cpp
+        # ina260.h
+        # TMP36.cpp
+        # TMP36.h
+        # UM7.cpp
+        # UM7.h
 )
