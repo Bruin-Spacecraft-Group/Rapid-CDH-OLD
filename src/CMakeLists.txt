@@ -13,11 +13,14 @@ include_directories(${WIRINGPI_INCLUDE_DIRS})
 add_executable(RapidCDH main.cpp)
 
 add_library(sensors "")
+add_library(scheduler "")
 
 add_subdirectory(sensors)
+add_subdirectory(scheduler)
 
 target_link_libraries(RapidCDH
     PUBLIC
         ${WIRINGPI_LIBRARIES}
         sensors
+        scheduler
 )
