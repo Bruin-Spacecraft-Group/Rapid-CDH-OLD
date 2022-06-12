@@ -61,8 +61,15 @@ git clone https://github.com/Bruin-Spacecraft-Group/RapidCDH.git
 Then run the setup script (you only need to do this once):
 
 ```
-sudo ./setup-rpi.sh
+sudo ./setup-rpi.sh -d <absolute path to rpi rootfs dir>
 ```
+
+For example,
+
+```
+sudo ./setup-rpi.sh -d $HOME
+```
+will put the rpi library files in `$HOME/rpi`.
 
 This will install the necessary Raspberry Pi toolchain and library files on your computer, as well as create a
 FindWiringPi.cmake file for finding and linking the WiringPi library.
@@ -70,7 +77,7 @@ FindWiringPi.cmake file for finding and linking the WiringPi library.
 Build the project:
 
 ```
-./build-rpi.sh
+./build-rpi.sh -d <absolute path to rpi rootfs dir>
 ```
 
 Move the executable to the Pi:
